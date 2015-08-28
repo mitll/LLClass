@@ -1,6 +1,10 @@
 ###To Build
 >> ./mk.sh
 
+###Build Dependencies
+* scala 2.10.3
+* Java 1.7
+* fastjar (Ubuntu)
 
 
 ###Data Format Description
