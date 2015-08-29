@@ -24,13 +24,13 @@
 * Optional - Scored files, model files, and log files won't be generated if they aren't specified at runtime
 
 ###Quick start:
->> java -jar classydoc.jar -all test/original4.tsv.gz -split 0.15 -iterations 10
+>> java -jar classylid.jar -all test/original4.tsv.gz -split 0.15 -iterations 10
 
 ###To run:
->> java -jar classydoc.jar -all data.gz -split 0.15 -iterations 30 -model model.mod -log log.log -score score.score
+>> java -jar classylid.jar -all data.gz -split 0.15 -iterations 30 -model model.mod -log log.log -score score.score
 
 ###To apply a model to some data:
->> java -jar classydoc.jar -test test/data1.tsv.gz -model model.mod -log log.log -score score.score
+>> java -jar classylid.jar -test test/data1.tsv.gz -model model.mod -log log.log -score score.score
 
 ###To run with separate train/test sets:
->> java -jar classydoc.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
+>> java -jar classylid.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
