@@ -15,6 +15,19 @@
 * fr	quelle langue est-elle?
 
 
+##Running MIRA4 with Multiparameters (sweeping)
+* Decide on an experiment name
+* create a folder in the current working directory called "mira_sweep_results"
+
+>> java -jar jarname algorithm data experiment_name
+
+>> java -jar classylid.jar mira test/original4.tsv.gz original4
+
+
+
+
+##Running MIRA4 without Multiparameters (Needs Editing!)
+
 ###Command Line Parameters Description
 * Model - apply it to new data
 * Log - accuracy per language, overall accuracy, debugging
