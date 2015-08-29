@@ -11,20 +11,22 @@ import text._
      var coarseC = (-5 to 16) map { math.pow(2,_) }
      var coarseGamma = (-5 to 6) map { math.pow(2,_) }
      for (bkgmin <- Seq.range(2,21,1).par) { for (g <- coarseGamma.par) { for (C <- coarseC.par) {
-       var c = new LID;
-       var title : String = "svm_sweep_results/" + exp_name + "_" + bkgmin + "_" + g + "_" + C;
-       val params = "-train-method svm -all " + data + " -bkg-min-count " + bkgmin + " -split 0.20 -gamma " + g + " -c " + C + " -log " + title
+       for (wOrder <- Seq.range(1,5,1).par) { for (cOrder <- Seq.range(1,5,1).par) {
+       var c = new LID
+       var title : String = "svm_sweep_results/" + exp_name + "_" + bkgmin + "_" + g + "_" + C + "_" + wOrder + "_" + cOrder
+       val params = "-train-method svm -all " + data + " -bkg-min-count " + bkgmin + " -split 0.20 -gamma " + g + " -c " + C + " -log " + title + " -word-ngram-order " + wOrder + " -char-ngram-order " + cOrder 
        val params2 : Array[String] = params.split(" ");
-       c.main(params2) }}}}
+       c.main(params2) }}}}}}
    
    def sweepMIRA (data : String, exp_name : String) {
-    for (iterations <- Seq.range(300,3100,100).par) { for (bkgmin <- Seq.range(2,21,1).par) {           
-       for (slack <- Seq.iterate(0.0005,25)(0.00025+).par) {
+    for (iterations <- Seq.range(5,30,5).par) { for (bkgmin <- Seq.range(2,21,1).par) {           
+       for (slack <- Seq.iterate(0.0005,25)(0.00025+).par) { for (wOrder <- Seq.range(1,5,1).par) {
+         for (cOrder <- Seq.range(1,5,1).par) {
          var c = new LID;
-         var title : String = "mira_sweep_results/" + exp_name + "_" + iterations + "_" + slack + "_" + bkgmin //+ "_order-1"
-         var params = "-train-method mira -all " + data +" -iterations " + iterations + " -slack " + slack + " -bkg-min-count " + bkgmin + " -split 0.20 -log " + title
+         var title : String = "mira_sweep_results/" + exp_name + "_" + iterations + "_" + slack + "_" + bkgmin + "_" + wOrder + "_" + cOrder
+         var params = "-train-method mira -all " + data +" -iterations " + iterations + " -slack " + slack + " -bkg-min-count " + bkgmin + " -split 0.20 -log " + title + " -word-ngram-order " + wOrder + " -char-ngram-order " + cOrder 
          var params2 : Array[String] = params.split(" ");
-         c.main(params2) }}}}
+         c.main(params2) }}}}}}
       
    def main(args : Array[String]) {
      var method = args(0);      
