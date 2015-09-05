@@ -107,8 +107,9 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
           if (!set.isDefinedAt(label)) set(label) = ArrayBuffer[(String, Symbol)]();
           set(label) += text -> label;
         }
-        datasetBreakdown(set);
-        splitLabelledData(set, split);
+        val strat = stratifyDataset(set);
+        datasetBreakdown(strat);
+        splitLabelledData(strat, split);
       }
       else Tuple2(null, null);
     val trainer = modelTrainer;

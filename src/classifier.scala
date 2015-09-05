@@ -67,4 +67,26 @@ trait TrainerTemplate extends InternalPipeSupport {
     log.separator();
     log("INFO", "%-20s | %10d", "Total", total);
   }
+
+  def datasetBreakdownInput[T](set : Map[Symbol, ArrayBuffer[(T, Symbol)]]) {
+    val skeys = set.keys.toList.sortWith(_.name > _.name);
+    log("DEBUG", "sorted keys = " + skeys);
+    log("INFO", "Dataset breakdown");
+    log.separator();
+    var total = 0;
+    for (label <- skeys) { val vecs = set(label); total += vecs.length; log("INFO", "%-20s | %10d", label.name, vecs.length); }
+    log.separator();
+    log("INFO", "%-20s | %10d", "Total", total);
+  }
+
+
+  def stratifyDataset[T](set : Map[Symbol, ArrayBuffer[(T, Symbol)]]) : Map[Symbol, ArrayBuffer[(T, Symbol)]] = {
+    var strat = Map[Symbol, ArrayBuffer[(T, Symbol)]]()
+    val skeys = set.keys.toList.sortWith(_.name > _.name);
+    val classes : Map[Symbol, Int] = Map[Symbol, Int]();
+    for (label <- skeys) { val vecs = set(label); classes(label) = vecs.length }    
+    val llimit = classes.values.toList.sortWith(_ < _)(0);
+    for (label <- skeys) { val vecs = set(label).take(llimit); strat(label) = vecs }    
+    return strat
+  }
 }
