@@ -21,7 +21,7 @@ trait ClassifierFactory[I] {
 }
 trait TrainerTemplate extends InternalPipeSupport {
   var (parts, trainSet, all, split, modelfn, testSet, scorefn, abname, tokens, merger) = (1, "", "", 0.1f, "", "", "", "", "", "");
-  var (trainAlg, average, iter, kBest, slack, svmC, gamma) = ("mira", true, 10, 4, 0.01f, 1.0f, 0.02f);
+  var (trainAlg, average, iter, kBest, slack, svmC, gamma) = ("mira", true, 20, 4, 0.01f, 1.0f, 0.02f);
   config += "General"   -> Params("log"           -> Arg(logfn _, logfn_= _,       "Log to this file instead of STDERR"),
                                   "parts"         -> Arg(parts _, parts_= _,       "For scoring, split data into these parts"),
                                   "train"         -> Arg(trainSet _, trainSet_= _, "Training set"),
