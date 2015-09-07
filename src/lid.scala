@@ -5,8 +5,22 @@ import collection.mutable.{ArrayBuffer, ListBuffer, HashMap, Map};
 import text._
 
 
- object multiparam {
-   
+object runner {
+  def main(args : Array[String]) {
+    var run = args(0)
+    if (run == "multiparam") {
+      var c = new multiparam
+      c.main(args.slice(1, args.length).toArray) 
+    }
+    if (run == "LID") {
+      var c = new LID
+      c.main(args.slice(1, args.length).toArray) 
+    }
+  }
+}
+
+
+class multiparam {  
    def sweepSVM (data : String, exp_name : String) {
      var coarseC = (-5 to 16) map { math.pow(2,_) }
      var coarseGamma = (-5 to 6) map { math.pow(2,_) }
@@ -52,6 +66,7 @@ import text._
      if (method == "run_mira") { runMIRA(data, exp_name) }
    }
  }
+
 
 
 class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierFactory[String] {
@@ -103,7 +118,7 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
   // -------------------------------------------------------------------------------------------------------------------------------------
   // Standalone runner, config and helpers
   // -------------------------------------------------------------------------------------------------------------------------------------
-  val program = "doc-test";
+  val program = "lid-test";
   var (wOrder, cOrder, minCount, prune, cutoff) = (1, 3, 2, 0.0f, 1e10f);
 
   config += ("Front End") -> Params("bkg-min-count"      -> Arg(minCount _, minCount_= _, "Minimum count for background models"),
