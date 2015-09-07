@@ -30,14 +30,14 @@ import text._
       
    def runSVM (data : String, exp_name : String) {
      var c = new LID
-     var title : String = "svm_sweep_results/" + exp_name + "_default"
+     var title : String = "run_svm_results/" + exp_name + "_default"
        val params = "-train-method svm -all " + data + " -split 0.20 -log " + title
        val params2 : Array[String] = params.split(" ");
        c.main(params2) }
    
    def runMIRA (data : String, exp_name : String) {
      var c = new LID;
-     var title : String = "mira_sweep_results/" + exp_name + "_default"
+     var title : String = "run_mira_results/" + exp_name + "_default"
      var params = "-train-method mira -all " + data + " -split 0.20 -log " + title
      var params2 : Array[String] = params.split(" ");
      c.main(params2) }
