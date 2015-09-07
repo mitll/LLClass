@@ -83,7 +83,7 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
   }
   
   // -------------------------------------------------------------------------------------------------------------------------------------
-  // DOC specific preprocessing
+  // LID specific preprocessing
   // -------------------------------------------------------------------------------------------------------------------------------------
   def wcNgrams(corder : Int, worder : Int) = {
     val cn = charTokenizer * ngrams2(maxOrder = corder);
@@ -138,6 +138,7 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
           if (!set.isDefinedAt(label)) set(label) = ArrayBuffer[(String, Symbol)]();
           set(label) += text -> label;
         }
+        datasetBreakdown(set);
         val strat = stratifyDataset(set);
         datasetBreakdown(strat);
         splitLabelledData(strat, split);

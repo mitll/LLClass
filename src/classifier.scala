@@ -47,6 +47,7 @@ trait TrainerTemplate extends InternalPipeSupport {
   def modelTrainer : Function2[Array[Array[Double]], Array[Symbol], LinearModel] = trainAlg match {
     case "mira"       => (w, l) => new MIRA(w, l, kBest, slack);
     case "svm"        => (w, l) => new SVM(w, l, svmC, gamma);
+    case "svmopen"        => (w, l) => new SVMOPEN(w, l, svmC, gamma);
     case "perceptron" => (w, l) => new Perceptron(w, l);
     case _ => throw Fatal("unkown trainer type");
   }
@@ -67,18 +68,6 @@ trait TrainerTemplate extends InternalPipeSupport {
     log.separator();
     log("INFO", "%-20s | %10d", "Total", total);
   }
-
-  def datasetBreakdownInput[T](set : Map[Symbol, ArrayBuffer[(T, Symbol)]]) {
-    val skeys = set.keys.toList.sortWith(_.name > _.name);
-    log("DEBUG", "sorted keys = " + skeys);
-    log("INFO", "Dataset breakdown");
-    log.separator();
-    var total = 0;
-    for (label <- skeys) { val vecs = set(label); total += vecs.length; log("INFO", "%-20s | %10d", label.name, vecs.length); }
-    log.separator();
-    log("INFO", "%-20s | %10d", "Total", total);
-  }
-
 
   def stratifyDataset[T](set : Map[Symbol, ArrayBuffer[(T, Symbol)]]) : Map[Symbol, ArrayBuffer[(T, Symbol)]] = {
     var strat = Map[Symbol, ArrayBuffer[(T, Symbol)]]()
