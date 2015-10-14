@@ -54,10 +54,16 @@ class FV(indexer : Seq[(Int, Double)]) extends Serializable {
   def tfnorm(denom : FV, limit : Double, squash : Double => Double) {
     var c, d  = 0;
     while(c < index.length) {
+//      println(c)
+//      println(denom.index(d))
+//      println(index(c))
+//      println(d)
       while(denom.index(d) < index(c) && d < denom.index.length - 1) d += 1;
       if (d <= denom.index.length) {
         val r = math.min(limit, squash(1.0 / denom.data(d)));
+        println(r)
         data(c) *= r;
+        println(data(c))
       }
       c += 1;
     }

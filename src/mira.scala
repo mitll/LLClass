@@ -13,6 +13,8 @@ import util.Random;
 import struct.solver.QPSolver;
 import struct.types.SLFeatureVector;
 import libsvm._;
+import scala.io.Source
+import java.io._
 
 
 /*********************************************************************************************/
@@ -172,34 +174,49 @@ class MIRA(w : Array[Array[Double]], c : Array[Symbol], val k : Int, val C : Dou
       weights << Wacc;
       log("INFO", "Online weights: " + weights(0).slice(0, 20).map { x => sprintf("%.4f", double2Double(x)) }.mkString(" "));
     }
-/*
-    if (false) {
+
+    if (true) {
       // Print heavy hitters
       val dict = HashMap[Int, String]();
       val R = """^\s*(\d+)\s+(.*?)\s*$""".r
-      for (l <- Source.fromInputStream(new FileInputStream("test/ilr/hub500/english/dict.txt"), "ISO8859_1").getLines)
+      val fname = "id_my_mturk_raw"
+      for (l <- Source.fromInputStream(new FileInputStream("dicts/"+fname+".txt"), "UTF8").getLines)
         l.trim match { case R(idx, word) => dict(idx.toInt) = word; }
       for (c <- 0 until weights.length) {
-        val hp = weights(c).zipWithIndex.toList.sort(_._1 > _._1).slice(0, 20);
-        val hn = weights(c).zipWithIndex.toList.sort(_._1 < _._1).slice(0, 20);
-        println("""\begin{table}[htb]""");
-        println("""  \center""");
-        println("""  \begin{tabular}{|r|l||r|l|}""");
-        println("""  \hline""");
-        println("""  {\bf Most Indicative} & {\bf +} & {\bf Most Contra-indicative} & {\bf -} \\""");
-        println("""  \hline""");
+        var outfile = "heavy_hitters/"+fname+"/"+classes(c)+".txt"
+        val pw = new PrintWriter(new File(outfile))
+        var outstring = ""
+        val hp = weights(c).zipWithIndex.toList.sortWith(_._1 > _._1).slice(0, 20);
+        val hn = weights(c).zipWithIndex.toList.sortWith(_._1 < _._1).slice(0, 20);
+//        println("""\begin{table}[htb]""");
+//        println("""  \center""");
+//        println("""  \begin{tabular}{|r|l||r|l|}""");
+//        println("""  \hline""");
+//        println("""  {\bf Most Indicative} & {\bf +} & {\bf Most Contra-indicative} & {\bf -} \\""");
+//        println("""  \hline""");
+//        for (i <- 0 until hp.length) {
+//          System.out.printf("  %20s & %.3f &", dict(hp(i)._2), double2Double(hp(i)._1));
+//          System.out.printf("%20s & %.3f \\\\\n", dict(hn(i)._2), double2Double(hn(i)._1));
+//        }
+//        println("""  \hline""");
+//        println("""  \end{tabular}""");
+//        println("""  \caption{Dominant features for Class """ + classes(c) + "}");
+//        println("""  \label{tab:level-""" + classes(c) + "}");
+//        println("""\end{table}""");
+        outstring = "Most Indicative - " + classes(c) + "\n"
         for (i <- 0 until hp.length) {
-          System.out.printf("  %20s & %.3f &", dict(hp(i)._2), double2Double(hp(i)._1));
-          System.out.printf("%20s & %.3f \\\\\n", dict(hn(i)._2), double2Double(hn(i)._1));
+          outstring = outstring + dict(hp(i)._2) + " " + double2Double(hp(i)._1) + "\n"
         }
-        println("""  \hline""");
-        println("""  \end{tabular}""");
-        println("""  \caption{Dominant features for Level """ + classes(c) + "}");
-        println("""  \label{tab:level-""" + classes(c) + "}");
-        println("""\end{table}""");
+        outstring = outstring + "Most Contra-Indicative - " + classes(c) + "\n"
+        for (i <- 0 until hp.length) {
+          outstring = outstring + dict(hn(i)._2) + " " + double2Double(hn(i)._1) + "\n"
+        }
+        outstring = outstring + "\n\n"
+        pw.write(outstring)
+        pw.close
       }
     }
-*/
+
   }
   override def regress(features : Iterable[(FV, Symbol)], average : Boolean, iterations : Int)(implicit log : Log) {
     val km = math.min(k, classes.length);
@@ -339,6 +356,90 @@ class Perceptron(w : Array[Array[Double]], c : Array[Symbol]) extends LinearMode
 
 /*********************************************************************************************/
 class SVM(w : Array[Array[Double]], c : Array[Symbol], val C : Double, val gamma : Double) extends LinearModel(w, c) {
+  var Wacc = weights.map { x => Array.fill(x.length)(0.0); }
+  var model : svm_model = null;
+
+  def setup(regress : Boolean, features : Iterable[(FV, Symbol)]) : svm_problem = {
+    val prob = new svm_problem();
+    val truth = new ArrayBuffer[Double]();
+    val vecs = new ArrayBuffer[Array[svm_node]]();
+
+    for ((fv, c) <- features) {
+      truth += (if (regress) c.name.toDouble else classIndex(c).toDouble);
+      vecs += fv.svmnode;
+    }
+    prob.l = truth.length;
+    prob.y = truth.toArray;
+    prob.x = vecs.toArray;
+
+    return prob;
+  }
+  def setupParameters(regress : Boolean, nu : Boolean) : svm_parameter = {
+    val param = new svm_parameter();
+
+    // default values
+    if (nu) param.svm_type = if (regress) svm_parameter.NU_SVR else svm_parameter.NU_SVC;
+    else param.svm_type = if (regress) svm_parameter.EPSILON_SVR else svm_parameter.C_SVC;
+    param.kernel_type = svm_parameter.LINEAR;
+    param.degree = 3;
+    param.gamma = gamma; //1.0 / size.toDouble;	// 1/num_features
+    param.coef0 = 0;
+    param.nu = 0.5;
+    param.cache_size = 100;
+    param.C = C;
+    param.eps = 1e-3;
+    param.p = 0.1;
+    param.shrinking = 1;
+    param.probability = 0;
+    param.nr_weight = 0;
+    param.weight_label = new Array[Int](0);
+    param.weight = new Array[Double](0);
+
+    return param;
+  }
+  def transfer(model : svm_model) { // convert to simple linear classifer
+    val start = new ArrayBuffer[Int]();
+    var p = 0;
+
+    start += 0;
+    for (i <- 1 until model.nr_class)
+      start += start(i-1) + model.nSV(i-1);
+
+    for (i <- 0 until model.nr_class)
+      for (j <- (i + 1) until model.nr_class) {
+        // sum support vectors
+        for (off <- 0 until model.nSV(i)) {
+          val sv = model.SV(start(i) + off);
+          for (d <- 0 until sv.length) weights(i)(sv(d).index) += model.sv_coef(j-1)(start(i) + off) * sv(d).value;
+        }
+        
+        for (off <- 0 until model.nSV(j)) {
+          val sv = model.SV(start(j) + off);
+          for (d <- 0 until sv.length) weights(i)(sv(d).index) += model.sv_coef(i)(start(j) + off) * sv(d).value;
+        }
+        p += 1;
+      }
+  }
+  override def train(features : Iterable[(FV, Symbol)], average : Boolean, iterations : Int)(implicit log : Log) {
+    val problem = setup(false, features);
+    val params = setupParameters(false, false);
+
+    model = svm.svm_train(problem, params);
+  }
+  override def regress(features : Iterable[(FV, Symbol)], average : Boolean, iterations : Int)(implicit log : Log) {
+    val problem = setup(true, features);
+    val params = setupParameters(true, false);
+
+    model = svm.svm_train(problem, params);
+  }
+  override def csortScores(fv : FV) : Array[(Double, Symbol)] = {
+    val values = new Array[Double](model.nr_class * (model.nr_class - 1) / 2);
+    val label = svm.svm_predict_values(model, fv.svmnode, values);
+    return Array[(Double, Symbol)](label -> classes(if (label >= classes.length || label <= 0) classes.length - 1 else label.toInt));   //BUG: doesn't break by giving a 'junk' value if out of bounds (i.e. <0 or >7) - solution fine for regression, would be inaccurate for classification
+  }
+}
+/*********************************************************************************************/
+class SVMOPEN(w : Array[Array[Double]], c : Array[Symbol], val C : Double, val gamma : Double) extends LinearModel(w, c) {
   var Wacc = weights.map { x => Array.fill(x.length)(0.0); }
   var model : svm_model = null;
 

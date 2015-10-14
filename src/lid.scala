@@ -3,9 +3,11 @@ package mitll
 import utilities._
 import collection.mutable.{ArrayBuffer, ListBuffer, HashMap, Map};
 import text._
+import java.io._
 
 
-object runner {
+object MITLL_LID
+ {
   def main(args : Array[String]) {
     var run = args(0)
     if (run == "multiparam") {
@@ -154,6 +156,18 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
         val labels  = input.map(_._2) toList;
         val prepped = input |>: skipLabels * preprocess(cOrder, wOrder);        
         val ((dict, index, bkgmodel), x) = prepped =+>: bkgS(mincount = minCount, prune = prune);
+
+        // save dict to file for printing heavy hitters (mira.scala 178 - commented out)
+        var fname = "id_my_mturk_raw"
+        var outfile = "dicts/"+fname+".txt"
+        val pw = new PrintWriter(new File(outfile))
+        for (i <- 0 to (index.length-1)) {
+          var outstring = i + " " + index(i) + "\n"
+          pw.write(outstring)
+        }
+        pw.close
+
+
         val vectors                      = prepped |>:  countTokens2 _ * counts2fv(dict, unk = true) * norm(bkg = bkgmodel, cutoff = cutoff) toList;
         
         log("INFO", "There are %d vectors in training", vectors.length);
