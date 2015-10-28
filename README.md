@@ -2,8 +2,8 @@
 >> ./mk.sh
 
 ###Build Dependencies
-* scala 2.10.3
-* Java 1.7
+* scala 2.10.6
+* Java 1.8
 * fastjar (Ubuntu)
 
 
@@ -50,12 +50,18 @@
 
 ###sbt behind a firewall
 * You may need to add a repositories file like this under your ~/.sbt directory:
+
 >> 515918-mitll:.sbt $ cat repositories
+
 >> [repositories]
+
 >>  local
+
 >>  my-ivy-proxy-releases: http://repo.typesafe.com/typesafe/ivy-releases/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+
 >>  my-maven-proxy-releases: http://repo1.maven.org/maven2/
 
 ###sbt build notes
 * To build a stand alone jar, do :
+
 >> sbt assembly
