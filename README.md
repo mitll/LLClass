@@ -47,3 +47,15 @@
 
 ###To run with separate train/test sets:
 >> java -jar classylid.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
+
+###sbt behind a firewall
+* You may need to add a repositories file like this under your ~/.sbt directory:
+>> 515918-mitll:.sbt $ cat repositories
+>> [repositories]
+>>  local
+>>  my-ivy-proxy-releases: http://repo.typesafe.com/typesafe/ivy-releases/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+>>  my-maven-proxy-releases: http://repo1.maven.org/maven2/
+
+###sbt build notes
+* To build a stand alone jar, do :
+>> sbt assembly
