@@ -9,14 +9,22 @@ import java.io._
 object MITLL_LID
  {
   def main(args : Array[String]) {
-    var run = args(0)
-    if (run == "multiparam") {
-      var c = new multiparam
-      c.main(args.slice(1, args.length).toArray) 
+    if (args.length < 2) {
+      System.err.println("Usage : expecting args like : LID -all test/original4.tsv.gz")
     }
-    if (run == "LID") {
-      var c = new LID
-      c.main(args.slice(1, args.length).toArray) 
+    else {
+      var run = args(0)
+      if (run == "multiparam") {
+        var c = new multiparam
+        c.main(args.slice(1, args.length).toArray)
+      }
+      else if (run == "LID") {
+        var c = new LID
+        c.main(args.slice(1, args.length).toArray)
+      }
+      else {
+        System.err.println("Usage : expecting first arg to be either multiparam or LID but got " +run)
+      }
     }
   }
 }

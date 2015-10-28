@@ -11,7 +11,7 @@ import utilities._
 import java.io.{FileReader, Reader, PrintStream, FileOutputStream, File};
 import util.parsing.combinator.RegexParsers;
 import collection.mutable.{HashMap, ArrayBuffer, ListBuffer, LinkedHashMap, Map};
-import org.apache.commons.lang.WordUtils._;
+import org.apache.commons.lang3.text.WordUtils._
 
 // Basic exception types
 case class ExitException(reason : String) extends Exception; // Non-real exception, from things like the usage message
