@@ -1,14 +1,18 @@
 ### To Compile Source Code and Build
 Go to top-level directory (ie. ../mira4) and type:
->> sbt assembly
+```
+sbt assembly
+```
 Running this command will cause SBT to download some dependencies, this may take some time depending on your internet connection. If you use a proxy, you may need to adjust your local proxy settings to allow SBT to fetch dependencies.
 
 This creates a jar in the folder called ../mira4/target
->> [info] Packaging ../mira4/target/scala-2.10/MITLL_LID-assembly-1.0.jar ...
-
+```
+[info] Packaging ../mira4/target/scala-2.10/MITLL_LID-assembly-1.0.jar ...
+```
 For ease of use during tasks, you can rename the jar and put it in the top-level directory:
->> mv ../mira4/target/scala-2.10/MITLL_LID-assembly-1.0.jar ../mira4/MITLL-LID.jar 
-
+```
+mv ../mira4/target/scala-2.10/MITLL_LID-assembly-1.0.jar ../mira4/MITLL-LID.jar 
+```
 
 ### Local Version Settings (known to build and run in this environment)
 * scala 2.10.6
@@ -34,7 +38,9 @@ fr	quelle langue est-elle?
 
 
 ### Quickstart:
->> java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz
+```
+java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz
+```
 
 ### Quickstart Expected Results:
 ```
@@ -60,13 +66,22 @@ fr	quelle langue est-elle?
 
 
 #### Use 85/15 train/test split and run for 10 iterations (optional - specify and save the resulting model, log and score files):
->> java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 10
+```
+java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 10
+```
+
 
 #### Save score files, model files, and log files, use 85/15 train/test split:
->> java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 30 -model news4L.mod -log news4L.log -score news4L.score
+```
+java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 30 -model news4L.mod -log news4L.log -score news4L.score
+```
 
 #### Apply an existing model to new test data (optional - specify and save the resulting log and score files):
->> java -jar MITLL_LID.jar LID -test new.tsv.gz -model old.mod
+```
+java -jar MITLL_LID.jar LID -test new.tsv.gz -model old.mod
+```
 
 #### Train and test on different data sets (optional - specify and save the resulting model, log, and score files):
->> java -jar MITLL_LID.jar LID -train data1.tsv.gz -test data2.tsv.gz
+```
+java -jar MITLL_LID.jar LID -train data1.tsv.gz -test data2.tsv.gz
+```
