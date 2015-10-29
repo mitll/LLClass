@@ -25,7 +25,7 @@ mv ../mira4/target/scala-2.10/MITLL_LID-assembly-1.0.jar ../mira4/MITLL-LID.jar
 ### Use the class mitll.SCORE
 1) create an instance of the SCORE class and Sspecify the LID model
 ```
-var newsRunner : mitll.SCORE("path/to/lid/model")
+var newsRunner = mitll.SCORE("path/to/lid/model")
 ```
 2) call the function mitll.SCORE.textLID()
 ```
