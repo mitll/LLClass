@@ -175,19 +175,20 @@ class MIRA(w : Array[Array[Double]], c : Array[Symbol], val k : Int, val C : Dou
       log("INFO", "Online weights: " + weights(0).slice(0, 20).map { x => sprintf("%.4f", double2Double(x)) }.mkString(" "));
     }
 
-    if (true) {
+    if (false) {
       // Print heavy hitters
       val dict = HashMap[Int, String]();
       val R = """^\s*(\d+)\s+(.*?)\s*$""".r
       val fname = "id_my_mturk_raw"
       for (l <- Source.fromInputStream(new FileInputStream("dicts/"+fname+".txt"), "UTF8").getLines)
         l.trim match { case R(idx, word) => dict(idx.toInt) = word; }
-      for (c <- 0 until weights.length) {
-        var outfile = "heavy_hitters/"+fname+"/"+classes(c)+".txt"
-        val pw = new PrintWriter(new File(outfile))
-        var outstring = ""
-        val hp = weights(c).zipWithIndex.toList.sortWith(_._1 > _._1).slice(0, 20);
-        val hn = weights(c).zipWithIndex.toList.sortWith(_._1 < _._1).slice(0, 20);
+ //     for (c <- 0 until weights.length) {
+ //       var outfile = "heavy_hitters/"+fname+"/"+classes(c)+".txt"
+ //       val pw = new PrintWriter(new File(outfile))
+ //       var outstring = ""
+ //       val hp = weights(c).zipWithIndex.toList.sortWith(_._1 > _._1).slice(0, 20);
+//       val hn = weights(c).zipWithIndex.toList.sortWith(_._1 < _._1).slice(0, 20);
+
 //        println("""\begin{table}[htb]""");
 //        println("""  \center""");
 //        println("""  \begin{tabular}{|r|l||r|l|}""");
@@ -203,18 +204,20 @@ class MIRA(w : Array[Array[Double]], c : Array[Symbol], val k : Int, val C : Dou
 //        println("""  \caption{Dominant features for Class """ + classes(c) + "}");
 //        println("""  \label{tab:level-""" + classes(c) + "}");
 //        println("""\end{table}""");
-        outstring = "Most Indicative - " + classes(c) + "\n"
-        for (i <- 0 until hp.length) {
-          outstring = outstring + dict(hp(i)._2) + " " + double2Double(hp(i)._1) + "\n"
-        }
-        outstring = outstring + "Most Contra-Indicative - " + classes(c) + "\n"
-        for (i <- 0 until hp.length) {
-          outstring = outstring + dict(hn(i)._2) + " " + double2Double(hn(i)._1) + "\n"
-        }
-        outstring = outstring + "\n\n"
-        pw.write(outstring)
-        pw.close
-      }
+
+
+//        outstring = "Most Indicative - " + classes(c) + "\n"
+//        for (i <- 0 until hp.length) {
+//          outstring = outstring + dict(hp(i)._2) + " " + double2Double(hp(i)._1) + "\n"
+//        }
+//        outstring = outstring + "Most Contra-Indicative - " + classes(c) + "\n"
+//        for (i <- 0 until hp.length) {
+//          outstring = outstring + dict(hn(i)._2) + " " + double2Double(hn(i)._1) + "\n"
+//        }
+//        outstring = outstring + "\n\n"
+//        pw.write(outstring)
+//        pw.close
+//      }
     }
 
   }
