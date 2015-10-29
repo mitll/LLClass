@@ -31,7 +31,7 @@ var newsRunner = mitll.SCORE("path/to/lid/model")
 ```
 var (language, confidence) = newsRunner.textLID("what language is this text string?")
 ```
-2) call the function mitll.SCORE.textLIDFull()
+3) call the function mitll.SCORE.textLIDFull()
 ```
 var langConfArray : Array[(String,Double)] = newsRunner.textLIDFull("what language is this text string?")
 ```
