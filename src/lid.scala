@@ -10,7 +10,7 @@ object MITLL_LID
  {
   def main(args : Array[String]) {
     if (args.length < 2) {
-      System.err.println("Usage : expecting args like : LID -all test/original4.tsv.gz")
+      System.err.println("Usage : expecting args --> LID -all test/original4.tsv.gz")
     }
     else {
       var run = args(0)
@@ -23,11 +23,33 @@ object MITLL_LID
         c.main(args.slice(1, args.length).toArray)
       }
       else {
-        System.err.println("Usage : expecting first arg to be either multiparam or LID but got " +run)
+        System.err.println("Usage : expecting first arg to be either multiparam or LID but instead got " +run)
       }
     }
   }
 }
+
+
+class SCORE (
+  var modeldir : String
+) {
+
+  val lidModel = LID.getClassifier(modeldir.getAbsolutePath);
+
+  def textLID(text : String) : (String, Double) = {
+    if (text != null && text != "") {
+      var language = lidModel.classify(text)(0)._2.name;
+      val lnum     = math.exp(lidModel.classify(text)(0)._1);
+      val denom    = lidModel.classify(text).foldLeft(0.0) { (a, b) => a + math.exp(b._1) };
+      val conf     = (lnum / denom) * 100;
+      val answers = (language, conf);
+      answers;
+    } else ("error: empty text string", 0.0);
+  }
+ 
+}
+
+
 
 
 class multiparam {  
