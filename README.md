@@ -19,69 +19,19 @@ mv ../mira4/target/scala-2.10/MITLL_LID-assembly-1.0.jar ../mira4/MITLL-LID.jar
 * Java 1.7
 
 
-### Data Format Description
-* The data should be separated tab-separated between label and document example. Each document example should be newline-separated
-
-##### Example Data Format:
-```
-en	this is english.
-fr	quelle langue est-elle?
-```
-
-### Default MIRA Parameters - when unspecified, these parameters are automatically set:
-* split: 0.10 (90/10 train-test split)
-* word-ngram-order: 1
-* char-ngram-order: 3
-* bkg-min-count: 2
-* slack: 0.01
-* iterations: 20
+#### The wrapper class can be instantiated inside of another Java/Scala program. There are two functions to score text. The function textLID() returns the language code and a confidence value for that code. The function textLIDFull() returns a set of language labels ranked by most likely to least likely and a confidence value for each one. 
 
 
-### Quickstart:
+### Use the class mitll.SCORE
+1) create an instance of the SCORE class and Sspecify the LID model
 ```
-java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz
+var newsRunner : mitll.SCORE("path/to/lid/model")
 ```
-
-### Quickstart Expected Results:
+2) call the function mitll.SCORE.textLID()
 ```
-(truncated from above)
-2015-10-05 15:56:25.912 [INFO]     Completed training
-2015-10-05 15:56:25.912 [INFO]     Training complete.
-2015-10-05 15:56:27.325 [INFO]     # of trials: 200
-2015-10-05 15:56:27.325 [INFO]                        ru         fa         es        dar          N    class %
-2015-10-05 15:56:27.325 [INFO]             ru         50          0          0          0         50   1.000000
-2015-10-05 15:56:27.325 [INFO]             fa          0         46          0          4         50   0.920000
-2015-10-05 15:56:27.326 [INFO]             es          0          0         50          0         50   1.000000
-2015-10-05 15:56:27.326 [INFO]            dar          0          0          0         50         50   1.000000
-2015-10-05 15:56:27.326 [INFO]     accuracy = 0.980000
+var (language, confidence) = newsRunner.textLID("what language is this text string?")
 ```
-
-### MITLL-LID Options
-* Model - save a LID model for later application onto new data
-* Log - log the parameters, accuracy per language, overall accuracy, debugging
-* Score - generate a file with LID scores on each sentence 
-* Data - use (-all) to generate models or do a train/test split. Data should be in TSV format and gzipped (gzip myfile.tsv)
-* Train/Test - if not using (-all with optional -split), then specify separate train and test sets (-train mytrain.tsv.gz -test mytest.tsv.gz). This is useful for training out-of-domain followed by testing in-domain.
-* Output Files - Scored files, model files, and log files are only saved when the user specifies them on command line at runtime
-
-
-#### Use 85/15 train/test split and run for 10 iterations (optional - specify and save the resulting model, log and score files):
+2) call the function mitll.SCORE.textLIDFull()
 ```
-java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 10
-```
-
-
-#### Save score files, model files, and log files, use 85/15 train/test split:
-```
-java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 30 -model news4L.mod -log news4L.log -score news4L.score
-```
-
-#### Apply an existing model to new test data (optional - specify and save the resulting log and score files):
-```
-java -jar MITLL_LID.jar LID -test new.tsv.gz -model old.mod
-```
-
-#### Train and test on different data sets (optional - specify and save the resulting model, log, and score files):
-```
-java -jar MITLL_LID.jar LID -train data1.tsv.gz -test data2.tsv.gz
+var langConfArray : Array[(String,Double)] = newsRunner.textLIDFull("what language is this text string?")
 ```
