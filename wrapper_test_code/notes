@@ -1,0 +1,2 @@
+scalac -classpath MITLL_LID.jar wrapper.scala
+scala -classpath MITLL_LID.jar:scala-library.jar:. wrapper

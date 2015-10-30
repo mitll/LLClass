@@ -34,7 +34,8 @@ class SCORE (
   var modeldir : String
 ) {
 
-  val lidModel = LID.getClassifier(modeldir.getAbsolutePath);
+  val runner = new LID
+  val lidModel = runner.getClassifier(modeldir.getAbsolutePath);
 
   def textLID(text : String) : (String, Double) = {
     if (text != null && text != "") {
@@ -46,6 +47,14 @@ class SCORE (
       answers;
     } else ("error: empty text string", 0.0);
   }
+
+  def textLIDFull(text : String) : Array[(Double, Symbol)] = {
+    if (text != null && text != "") {
+      var result = lidModel.classify(text);
+      return result;
+    } else { return Array[(Double, Symbol)]() }
+  }
+
  
 }
 
