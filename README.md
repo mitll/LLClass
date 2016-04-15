@@ -6,45 +6,85 @@
 * Java 1.8
 * fastjar (Ubuntu)
 
+### To Compile Source Code and Build
+Go to top-level directory (ie. ../mira4) and type:
+```
+sbt assembly
+```
+Running this command will cause SBT to download some dependencies, this may take some time depending on your internet connection. If you use a proxy, you may need to adjust your local proxy settings to allow SBT to fetch dependencies.
 
-###Data Format Description
+This creates a jar in the folder called ../mira4/target
+```
+[info] Packaging ../mira4/target/scala-2.10/MITLL_LID-assembly-1.0.jar ...
+```
+For ease of use during tasks, you can rename the jar and put it in the top-level directory:
+```
+mv ../mira4/target/scala-2.10/MITLL_LID-assembly-1.0.jar ../mira4/MITLL-LID.jar 
+```
+
+### Data Format Description
 * The data should be separated tab-separated between label and document example. Each document example should be newline-separated
 
-#####Text Language ID Classification Sample:
-* en	this is english.
-* fr	quelle langue est-elle?
+##### Example Data Format:
+```
+en	this is english.
+fr	quelle langue est-elle?
+```
+
+### Default MIRA Parameters - when unspecified, these parameters are automatically set:
+* split: 0.10 (90/10 train-test split)
+* word-ngram-order: 1
+* char-ngram-order: 3
+* bkg-min-count: 2
+* slack: 0.01
+* iterations: 20
 
 
-##Running MIRA4 with Multiparameters (sweeping)
-* Decide on an experiment name
-* create a folder in the current working directory called "mira_sweep_results"
+### Quickstart:
+```
+java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz
+```
 
->> java -jar jarname algorithm data experiment_name
+### Quickstart Expected Results:
+```
+(truncated from above)
+2015-10-05 15:56:25.912 [INFO]     Completed training
+2015-10-05 15:56:25.912 [INFO]     Training complete.
+2015-10-05 15:56:27.325 [INFO]     # of trials: 200
+2015-10-05 15:56:27.325 [INFO]                        ru         fa         es        dar          N    class %
+2015-10-05 15:56:27.325 [INFO]             ru         50          0          0          0         50   1.000000
+2015-10-05 15:56:27.325 [INFO]             fa          0         46          0          4         50   0.920000
+2015-10-05 15:56:27.326 [INFO]             es          0          0         50          0         50   1.000000
+2015-10-05 15:56:27.326 [INFO]            dar          0          0          0         50         50   1.000000
+2015-10-05 15:56:27.326 [INFO]     accuracy = 0.980000
+```
 
->> java -jar classylid.jar mira test/original4.tsv.gz original4
-
-
-
-
-##Running MIRA4 without Multiparameters (Needs Editing!)
-
-###Command Line Parameters Description
-* Model - apply it to new data
-* Log - accuracy per language, overall accuracy, debugging
-* Score - each testing instance gets a score 
+### MITLL-LID Options
+* Model - save a LID model for later application onto new data
+* Log - log the parameters, accuracy per language, overall accuracy, debugging
+* Score - generate a file with LID scores on each sentence 
 * Data - use (-all) to generate models or do a train/test split. Data should be in TSV format and gzipped (gzip myfile.tsv)
-* Train/Test - if not using (-all) with (-split), then specify separate train and test sets (-train mytrain.tsv.gz -test mytest.tsv.gz)
-* Optional - Scored files, model files, and log files won't be generated if they aren't specified at runtime
+* Train/Test - if not using (-all with optional -split), then specify separate train and test sets (-train mytrain.tsv.gz -test mytest.tsv.gz). This is useful for training out-of-domain followed by testing in-domain.
+* Output Files - Scored files, model files, and log files are only saved when the user specifies them on command line at runtime
 
-###Quick start:
->> java -jar classylid.jar -all test/original4.tsv.gz -split 0.15 -iterations 10
 
-###To run:
->> java -jar classylid.jar -all data.gz -split 0.15 -iterations 30 -model model.mod -log log.log -score score.score
+#### Use 85/15 train/test split and run for 10 iterations (optional - specify and save the resulting model, log and score files):
+```
+java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 10
+```
 
-###To apply a model to some data:
->> java -jar classylid.jar -test test/data1.tsv.gz -model model.mod -log log.log -score score.score
 
+#### Save score files, model files, and log files, use 85/15 train/test split:
+```
+java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 30 -model news4L.mod -log news4L.log -score news4L.score
+```
+
+#### Apply an existing model to new test data (optional - specify and save the resulting log and score files):
+```
+java -jar MITLL_LID.jar LID -test new.tsv.gz -model old.mod
+```
+
+<<<<<<< HEAD
 ###To run with separate train/test sets:
 >> java -jar classylid.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
 
@@ -65,3 +105,9 @@
 * To build a stand alone jar, do :
 
 >> sbt assembly
+=======
+#### Train and test on different data sets (optional - specify and save the resulting model, log, and score files):
+```
+java -jar MITLL_LID.jar LID -train data1.tsv.gz -test data2.tsv.gz
+```
+>>>>>>> bce7b1150bded0db62c3c06f0655396925fce7b5

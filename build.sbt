@@ -6,7 +6,7 @@ version := "1.0"
 
 scalaVersion := "2.10.6"
 
-sbtVersion := "0.13.9"
+sbtVersion := "0.13.11"
 
 // get the assembly plugin, not using https
 resolvers += "scalasbt" at "http://repo.scala-sbt.org/scalasbt/sbt-plugin-releases"
