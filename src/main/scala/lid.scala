@@ -1,3 +1,9 @@
+/*
+ *  Written by Wade Shen <swade@ll.mit.edu>
+ *  Copyright 2005-2016 Massachusetts Institute of Technology, Lincoln Laboratory
+ *  Revision: 0.2
+ */
+
 package mitll
 
 import java.io.File

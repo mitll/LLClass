@@ -1,10 +1,7 @@
-/**
- * Pipes.scala
- *
- * @author Wade Shen <BR>
- * <tt><a href=mailto:swade@ll.mit.edu>swade@ll.mit.edu</a></tt> <BR>
- * Copyright &copy; 2005 Massachusetts Institute of Technology, Lincoln Laboratory
- * @version 0.1a
+/*
+ *  Written by Wade Shen <swade@ll.mit.edu>
+ *  Copyright 2005-2016 Massachusetts Institute of Technology, Lincoln Laboratory
+ *  Revision: 0.2
  */
 
 package mitll
@@ -12,6 +9,7 @@ import java.io.{BufferedOutputStream, FileOutputStream, PrintStream}
 import java.lang.reflect.{Field, Method}
 
 import mitll.utilities._
+
 import scala.collection.Iterable
 import scala.collection.immutable.Vector
 import scala.collection.mutable.{ArrayBuffer, HashMap, Map}
@@ -446,11 +444,12 @@ trait InternalPipeSupport extends IPSLowPriority with JobQFactory { outer =>
   implicit def F2toPipeLine[I, Mi, O, Mo](f : Function2[Mi, Iterable[I], (Mo, Iterable[O])]) = EndPipe(liftIterable2P(f))
 }
 
+//noinspection ScalaUnnecessaryParentheses,ScalaUnnecessaryParentheses,ScalaUnnecessaryParentheses
 trait ProcessorRegistry extends ArgHandler with JobQFactory {
   val registry : Map[String, Class[_]] = HashMap[String, Class[_]]()
 
   def register(classes : Class[_]*) {
-    for (cl <- classes; if (!(registry isDefinedAt cl.getName()))) {
+    for (cl <- classes; if !(registry isDefinedAt cl.getName())) {
       registry(cl.getName()) = cl
       val x = instantiateProcessor[Processor](cl.getName(), checkRegistry = false)
       val (name, map) = x.getParams
@@ -482,8 +481,8 @@ trait ProcessorRegistry extends ArgHandler with JobQFactory {
       }
     }
     val cons = cl.getConstructors()(0)
-    val ret  = if (classOf[ParallelProcessMio[_, _, _, _]].isAssignableFrom(cl))  cons.newInstance((getDefaults(cons, 3) ++ Array[AnyRef](log, tmpdir, JobQMaker)) : _*).asInstanceOf[T]
-    else cons.newInstance((getDefaults(cons, 2) ++ Array[AnyRef](log, tmpdir)) : _*).asInstanceOf[T]
+    val ret  = if (classOf[ParallelProcessMio[_, _, _, _]].isAssignableFrom(cl))  cons.newInstance(getDefaults(cons, 3) ++ Array[AnyRef](log, tmpdir, JobQMaker) : _*).asInstanceOf[T]
+    else cons.newInstance(getDefaults(cons, 2) ++ Array[AnyRef](log, tmpdir) : _*).asInstanceOf[T]
 
     val parms = ret.registerArgs
     if (!registry.isDefinedAt(cl.getName)) {
@@ -494,6 +493,7 @@ trait ProcessorRegistry extends ArgHandler with JobQFactory {
     ret
   }
 }
+//noinspection ScalaUnnecessaryParentheses,ScalaUnnecessaryParentheses,ScalaUnnecessaryParentheses,ScalaUnnecessaryParentheses,ScalaUnnecessaryParentheses,ScalaUnnecessaryParentheses,ScalaUnnecessaryParentheses
 trait ExternalPipeSupport extends RegexParsers { self : ProcessorRegistry =>
   val log : Log
 
@@ -516,25 +516,25 @@ trait ExternalPipeSupport extends RegexParsers { self : ProcessorRegistry =>
   def floatLit : Parser[String] = """[+-]?(\d+(\.\d*)?|\d*\.\d+)([eE][+-]?\d+)?[fFdD]?""".r
 
   def stringLit = str1Regex ^^ { case str1Regex(x) => x } | str2Regex ^^ { case str2Regex(x) => x }; // TODO: Octal / unicode literal parser translation
-  def addex : Parser[Pi] = repsep((termparam[P] | terminal[P]), "+") ^^ { case a => EndPipe(a.tail.foldLeft(a.head)(_ + _)) }
+  def addex : Parser[Pi] = repsep(termparam[P] | terminal[P], "+") ^^ { case a => EndPipe(a.tail.foldLeft(a.head)(_ + _)) }
   def paren : Parser[Pi] = rep1sep(ident, ".") ~ "(" ~ addex ~ ")" ^^ { 
     case a ~ "(" ~ b ~ ")" => PipeLine(b, EndPipe(instantiateProcessor[CombinerMio[Any, Any, Any]](a.mkString("."))));
   }
-  def expr : Parser[Pi] = (paren | ((termparam[P] | terminal[P]) ^^ { case a => EndPipe(a) }))
+  def expr : Parser[Pi] = paren | ((termparam[P] | terminal[P]) ^^ { case a => EndPipe(a) })
   def terminal[T <: Processor] : Parser[T] = rep1sep(ident, ".") ^^ { a => instantiateProcessor[T](a.mkString(".")) }
-  def setname : Parser[String] = rep1sep(ident, ("-" | ".")) ^^ { case a => a.mkString("-") }
+  def setname : Parser[String] = rep1sep(ident, "-" | ".") ^^ { case a => a.mkString("-") }
   def setting : Parser[(String, String)] = setname ~ "=" ~ (ident | floatLit | numericLit | stringLit) ^^ { case a ~ "=" ~ b => (a, b.replaceAll("""\\n""", "\n")) }
   def params : Parser[Map[String, String]] = repsep(setting, ",") ^^ { case a => val ret = new HashMap[String, String](); if (a != null) a.foreach { e => ret(e._1) = e._2; }; ret }
   def termparam[T <: Processor] : Parser[T] = terminal[T] ~ "[" ~ params ~ "]" ^^ { case a ~ "[" ~ b ~ "]" => a.setInstanceValues(b); a }
   def plist : Parser[Pi] = rep1sep(expr, "->") ^^ { case a => a.dropRight(1).foldRight(a.last)(_ ->: _) }
-  def pipeSpec : Parser[Pi] = ( plist | expr )
+  def pipeSpec : Parser[Pi] = plist | expr
 
   def inputSpec : Parser[PipeInput] = numericLit ~ (":" | "^") ~ numericLit ^^ { case a ~ op ~ b => PipeInput(a.toInt, b.toInt, op); }
   def sinputSpec : Parser[PipeInput] = numericLit ^^ { case a => PipeInput(a.toInt, a.toInt); }
   def pipe : Parser[(Int, List[PipeInput], Pi)] = numericLit ~ "=" ~ rep1sep(inputSpec | sinputSpec, "+") ~ ":>" ~ pipeSpec ^^ { case a ~ "=" ~ b ~ ":>" ~ c => (a.toInt, b, c) }
-  def multex : Parser[CP] = repsep((termparam[CP] | terminal[CP]), "*") ^^ { case a => a.tail.foldLeft(a.head)(_ * _) }
+  def multex : Parser[CP] = repsep(termparam[CP] | terminal[CP], "*") ^^ { case a => a.tail.foldLeft(a.head)(_ * _) }
   def cpipe : Parser[(Int, List[PipeInput], Pi)] = numericLit ~ "=" ~ rep1sep(inputSpec | sinputSpec, "+") ~ "|>" ~ multex ^^ { case a ~ "=" ~ b ~ "|>" ~ c => (a.toInt, b, ComposablePipe(c)) }
-  def pipetype : Parser[(Int, List[PipeInput], Pi)] = (pipe | cpipe)
+  def pipetype : Parser[(Int, List[PipeInput], Pi)] = pipe | cpipe
   def namelist : Parser[Map[Int, (List[PipeInput], Pi)]] = 
     repsep(pipetype, ";") <~ opt(";") ^^ { case a => { val ret = new HashMap[Int, (List[PipeInput], Pi)]; a.map { l => ret(l._1) = (l._2, l._3); }; ret; } }
 
@@ -633,7 +633,7 @@ trait ExternalPipeSupport extends RegexParsers { self : ProcessorRegistry =>
     con
   }
   def runPipeDescriptor(desc : String, input : Vector[Iterable[Any]]) : Map[Int, Vector[Iterable[Any]]] =
-    runMetaPipeDescriptor(desc, input.zipWithIndex.map { case (i, m) => (m -> i) }).map { case (i, o) => (i, o.map { case (m, d) => d }) }
+    runMetaPipeDescriptor(desc, input.zipWithIndex.map { case (i, m) => m -> i }).map { case (i, o) => (i, o.map { case (m, d) => d }) }
 }
 trait PipeEntryPoint[R] extends ExternalPipeSupport with JobQEntryPoint[R] with ProcessorRegistry
 
