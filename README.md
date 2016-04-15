@@ -84,7 +84,6 @@ java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterati
 java -jar MITLL_LID.jar LID -test new.tsv.gz -model old.mod
 ```
 
-<<<<<<< HEAD
 ###To run with separate train/test sets:
 >> java -jar classylid.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
 
@@ -105,9 +104,48 @@ java -jar MITLL_LID.jar LID -test new.tsv.gz -model old.mod
 * To build a stand alone jar, do :
 
 >> sbt assembly
-=======
+
 #### Train and test on different data sets (optional - specify and save the resulting model, log, and score files):
 ```
 java -jar MITLL_LID.jar LID -train data1.tsv.gz -test data2.tsv.gz
 ```
->>>>>>> bce7b1150bded0db62c3c06f0655396925fce7b5
+
+#### Twitter Results
+
+### 11 Languages 
+
+2016-04-15 16:11:37.257 [INFO]     # of trials: 825
+2016-04-15 16:11:37.258 [INFO]                        zh         uk         ru         no         nl         ko         id         fa         en         da         ar          N    class %
+2016-04-15 16:11:37.258 [INFO]             zh         74          1          0          0          0          0          0          0          0          0          0         75   0.986667
+2016-04-15 16:11:37.258 [INFO]             uk          1         40         28          2          0          0          0          2          0          2          0         75   0.533333
+2016-04-15 16:11:37.258 [INFO]             ru          0          4         71          0          0          0          0          0          0          0          0         75   0.946667
+2016-04-15 16:11:37.258 [INFO]             no          1          1          0         28         11          1         10          0          8         15          0         75   0.373333
+2016-04-15 16:11:37.258 [INFO]             nl          1          0          0          3         57          0          6          0          4          4          0         75   0.760000
+2016-04-15 16:11:37.258 [INFO]             ko          0          0          0          0          0         74          0          0          1          0          0         75   0.986667
+2016-04-15 16:11:37.258 [INFO]             id          1          0          0          1          2          0         68          0          2          1          0         75   0.906667
+2016-04-15 16:11:37.258 [INFO]             fa          1          1          0          0          0          0          1         69          0          0          3         75   0.920000
+2016-04-15 16:11:37.258 [INFO]             en          1          1          0          3          0          0          3          0         57         10          0         75   0.760000
+2016-04-15 16:11:37.258 [INFO]             da          0          0          0          9          1          0          4          1          6         54          0         75   0.720000
+2016-04-15 16:11:37.258 [INFO]             ar          0          0          0          0          0          0          0          1          0          0         74         75   0.986667
+2016-04-15 16:11:37.258 [INFO]     accuracy = 0.807273
+
+### 4 Languages 5K each
+
+2016-04-15 16:17:37.165 [INFO]     # of trials: 3000
+2016-04-15 16:17:37.166 [INFO]                        no         nl         en         da          N    class %
+2016-04-15 16:17:37.166 [INFO]             no        652         41         36         21        750   0.869333
+2016-04-15 16:17:37.166 [INFO]             nl         20        706         19          5        750   0.941333
+2016-04-15 16:17:37.166 [INFO]             en         31         13        685         21        750   0.913333
+2016-04-15 16:17:37.166 [INFO]             da         84         23         18        625        750   0.833333
+2016-04-15 16:17:37.166 [INFO]     accuracy = 0.889333
+
+### 4 Languages 500 each
+
+2016-04-15 16:20:11.074 [INFO]     # of trials: 300
+2016-04-15 16:20:11.075 [INFO]                        no         nl         en         da          N    class %
+2016-04-15 16:20:11.075 [INFO]             no         45         13          7         10         75   0.600000
+2016-04-15 16:20:11.075 [INFO]             nl          3         63          4          5         75   0.840000
+2016-04-15 16:20:11.075 [INFO]             en          7          0         57         11         75   0.760000
+2016-04-15 16:20:11.075 [INFO]             da         20          3          4         48         75   0.640000
+2016-04-15 16:20:11.075 [INFO]     accuracy = 0.710000
+

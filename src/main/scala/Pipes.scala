@@ -366,7 +366,13 @@ case class EndPipe[I, Mi, O, Mo](proc : ParallelProcessMio[I, Mi, O, Mo]) extend
     if (proc.q != null) proc.q.run
     var ret = Vector[(Mo, Iterable[O])]()
 
-    for (idx <- 0 until ins.length) { val res = proc.collectM(proc.q, metas zip ins, idx); if(res != null) ret ++= res; }
+    for (idx <- 0 until ins.length) {
+      val res = proc.collectM(proc.q, metas zip ins, idx)
+
+      if(res != null) {
+        ret ++= res
+      }
+    }
     ret
   }
   override def toString = proc.toString
