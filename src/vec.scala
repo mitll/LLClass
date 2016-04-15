@@ -61,9 +61,9 @@ class FV(indexer : Seq[(Int, Double)]) extends Serializable {
       while(denom.index(d) < index(c) && d < denom.index.length - 1) d += 1;
       if (d <= denom.index.length) {
         val r = math.min(limit, squash(1.0 / denom.data(d)));
-        println(r)
+//        println(r)
         data(c) *= r;
-        println(data(c))
+//        println(data(c))
       }
       c += 1;
     }

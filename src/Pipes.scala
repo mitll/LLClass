@@ -13,7 +13,7 @@ import java.io.{File, BufferedReader, BufferedWriter, BufferedOutputStream, Inpu
 import java.util.zip._;
 import java.net.URL;
 import java.lang.reflect.{Method, Field};
-import annotation.target.field;
+//import annotation.target.field;
 import io.{BufferedSource, Source};
 import util.matching.Regex;
 import util.parsing.combinator.RegexParsers;
