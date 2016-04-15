@@ -13,7 +13,7 @@ resolvers += "scalasbt" at "http://repo.scala-sbt.org/scalasbt/sbt-plugin-releas
 
 mainClass := Some("mitll.MITLL_LID")
 
-scalaSource in Compile := baseDirectory.value / "src"
+//scalaSource in Compile := baseDirectory.value / "src"
 
 libraryDependencies += "org.apache.commons" % "commons-email" % "1.3.1"
 
