@@ -1,10 +1,6 @@
-###To Build
->> ./mk.sh
-
 ###Build Dependencies
-* scala 2.10.6
+* scala 2.11.8
 * Java 1.8
-* fastjar (Ubuntu)
 
 ### To Compile Source Code and Build
 Go to top-level directory (ie. ../mira4) and type:
@@ -84,36 +80,32 @@ java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterati
 java -jar MITLL_LID.jar LID -test new.tsv.gz -model old.mod
 ```
 
-###To run with separate train/test sets:
->> java -jar classylid.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
+#### Train and test on different data sets (optional - specify and save the resulting model, log, and score files):
+```
+java -jar MITLL_LID.jar LID -train data1.tsv.gz -test data2.tsv.gz
+```
+
+###To run with separate train/test sets specify model and score files:
+``` 
+java -jar MITLL_LID.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
+```
 
 ###sbt behind a firewall
 * You may need to add a repositories file like this under your ~/.sbt directory:
 
->> 515918-mitll:.sbt $ cat repositories
-
->> [repositories]
-
->>  local
-
->>  my-ivy-proxy-releases: http://repo.typesafe.com/typesafe/ivy-releases/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
-
->>  my-maven-proxy-releases: http://repo1.maven.org/maven2/
-
-###sbt build notes
-* To build a stand alone jar, do :
-
->> sbt assembly
-
-#### Train and test on different data sets (optional - specify and save the resulting model, log, and score files):
 ```
-java -jar MITLL_LID.jar LID -train data1.tsv.gz -test data2.tsv.gz
+515918-mitll:.sbt $ cat repositories
+[repositories]
+  local
+  my-ivy-proxy-releases: http://repo.typesafe.com/typesafe/ivy-releases/, [organization]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+  my-maven-proxy-releases: http://repo1.maven.org/maven2/
 ```
 
 #### Twitter Results
 
 ### 11 Languages 
 
+```
 2016-04-15 16:11:37.257 [INFO]     # of trials: 825
 2016-04-15 16:11:37.258 [INFO]                        zh         uk         ru         no         nl         ko         id         fa         en         da         ar          N    class %
 2016-04-15 16:11:37.258 [INFO]             zh         74          1          0          0          0          0          0          0          0          0          0         75   0.986667
@@ -128,9 +120,11 @@ java -jar MITLL_LID.jar LID -train data1.tsv.gz -test data2.tsv.gz
 2016-04-15 16:11:37.258 [INFO]             da          0          0          0          9          1          0          4          1          6         54          0         75   0.720000
 2016-04-15 16:11:37.258 [INFO]             ar          0          0          0          0          0          0          0          1          0          0         74         75   0.986667
 2016-04-15 16:11:37.258 [INFO]     accuracy = 0.807273
+```
 
 ### 4 Languages 5K each
 
+```
 2016-04-15 16:17:37.165 [INFO]     # of trials: 3000
 2016-04-15 16:17:37.166 [INFO]                        no         nl         en         da          N    class %
 2016-04-15 16:17:37.166 [INFO]             no        652         41         36         21        750   0.869333
@@ -138,9 +132,11 @@ java -jar MITLL_LID.jar LID -train data1.tsv.gz -test data2.tsv.gz
 2016-04-15 16:17:37.166 [INFO]             en         31         13        685         21        750   0.913333
 2016-04-15 16:17:37.166 [INFO]             da         84         23         18        625        750   0.833333
 2016-04-15 16:17:37.166 [INFO]     accuracy = 0.889333
+```
 
 ### 4 Languages 500 each
 
+```
 2016-04-15 16:20:11.074 [INFO]     # of trials: 300
 2016-04-15 16:20:11.075 [INFO]                        no         nl         en         da          N    class %
 2016-04-15 16:20:11.075 [INFO]             no         45         13          7         10         75   0.600000
@@ -148,4 +144,4 @@ java -jar MITLL_LID.jar LID -train data1.tsv.gz -test data2.tsv.gz
 2016-04-15 16:20:11.075 [INFO]             en          7          0         57         11         75   0.760000
 2016-04-15 16:20:11.075 [INFO]             da         20          3          4         48         75   0.640000
 2016-04-15 16:20:11.075 [INFO]     accuracy = 0.710000
-
+```
