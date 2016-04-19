@@ -30,41 +30,41 @@ import org.scalatest._
 // LID -test eval/news4L-500each.tsv -model news4L.mod
 class LIDSpec extends FlatSpec with Matchers {
   // same as java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 10
-  ignore should "train a model on 4 newswire languages using 85/15 train/test split" in {
+  it should "train a model on 4 newswire languages using 85/15 train/test split" in {
     val args = "-all test/news4L-500each.tsv.gz -split 0.15 -iterations 10"
     val overallAccuracy = new LID().ep(args.split(" "))
     val expected = 0.983f
     overallAccuracy shouldBe expected +- 0.001f
   }
 
-  ignore should "train a model over 11 languages of twitter" in {
+  it should "train a model over 11 languages of twitter" in {
     val args = "-all test/twitter-11-500each.tsv.gz -split 0.15 -iterations 10"
     val overallAccuracy = new LID().ep(args.split(" "))
     val expected = 0.807f
     overallAccuracy shouldBe expected +- 0.001f
   }
 
-  ignore should "train a model over 4 languages 5K data per" in {
+  it should "train a model over 4 languages 5K data per" in {
     val args = "-all test/no_nl_da_en_5k.tsv.gz -split 0.15 -iterations 10"
     val overallAccuracy = new LID().ep(args.split(" "))
     val expected = 0.889f
     overallAccuracy shouldBe expected +- 0.001f
   }
 
-  ignore should "train a model over 4 languages 500 data per" in {
+  it should "train a model over 4 languages 500 data per" in {
     val args = "-all test/no_nl_da_en_500.tsv.gz -split 0.15 -iterations 10"
     val overallAccuracy = new LID().ep(args.split(" "))
     val expected = 0.710f
     overallAccuracy shouldBe expected +- 0.001f
   }
 
-  ignore should "train a model and test on train - should be 100% accurate" in {
+  it should "train a model and test on train - should be 100% accurate" in {
     val args = "-train test/twitter-11-500each.tsv.gz -test test/twitter-11-500each.tsv.gz"
     val expected = 1.000f
     new LID().ep(args.split(" ")) shouldBe expected +- 0.001f
   }
 
-  ignore should "save out a model, log and score files" in {
+  it should "save out a model, log and score files" in {
     val modelFile: String = "news4L.mod"
     val logFile: String = "news4L.log"
     val scoreFile: String = "news4L.score"
@@ -77,7 +77,7 @@ class LIDSpec extends FlatSpec with Matchers {
     new File(scoreFile) should exist
   }
 
-  ignore should "test against a saved model" in {
+  it should "test against a saved model" in {
     val args = "-test test/news4L-500each.tsv -model models/news4L.mod"
     val accuracy = new LID().ep(args.split(" "))
     accuracy shouldBe 0.9965f +- 0.001f
