@@ -1,8 +1,21 @@
 
 /*
- *  Written by Wade Shen <swade@ll.mit.edu>
- *  Copyright 2005-2016 Massachusetts Institute of Technology, Lincoln Laboratory
- *  Revision: 0.2
+ * Copyright 2013-2016 Massachusetts Institute of Technology, Lincoln Laboratory
+ * version 0.2
+ * author: Wade Shen, Jennifer Williams, Gordon Vidaver
+ * dagli@ll.mit.edu
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package mitll.lid
@@ -362,10 +375,10 @@ object utilities {
   // -------------------------------------------------------------------------------------------------------------------------------------
   def classify(input : Iterable[FV], model : LinearModel) = input map model.csortScores _
 
-  def scoreClassification(scores : Iterable[(Array[(Double, Symbol)], Symbol)]) = {
+  def scoreClassification(scores : Iterable[(Array[(Double, Symbol)], Symbol)]): (Float, Array[String]) = {
     var (correct, total) = (0.0f, 0.0f)
     var confmat          = HashMap[Symbol, Map[Symbol, Double]]()
-    def printConfMat = {
+    def printConfMat: Array[String] = {
       val outputs = Set(confmat.values.flatMap(_.keySet).toSeq : _*).toList.sortWith(_.name > _.name)
       val truths  = confmat.keys.toList.sortWith(_.name > _.name)
       var ret = ArrayBuffer((Array("") ++ outputs.map(_.name) ++ Array("N", "class %")).map("%10s" % _).mkString(" "))
@@ -386,6 +399,7 @@ object utilities {
     }
     (correct / total, printConfMat)
   }
+
   def scoreRegression(scores : Iterable[(Array[(Double, Symbol)], Symbol)]) = {
     var (mse, total) = (0.0, 0.0)
     var confmat      = HashMap[Symbol, Double]() withDefaultValue 0.0

@@ -1,7 +1,20 @@
 /*
- *  Written by Wade Shen <swade@ll.mit.edu>
- *  Copyright 2005-2016 Massachusetts Institute of Technology, Lincoln Laboratory
- *  Revision: 0.2
+ * Copyright 2013-2016 Massachusetts Institute of Technology, Lincoln Laboratory
+ * version 0.2
+ * author: Wade Shen, Jennifer Williams, Gordon Vidaver
+ * dagli@ll.mit.edu
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package mitll.lid
@@ -36,28 +49,36 @@ object MITLL_LID {
   }
 }
 
-class SCORE(val modeldir: String) {
+class Scorer(val modeldir: String) {
   val runner = new LID
   val lidModel = runner.getClassifier(modeldir.getAbsolutePath)
 
   def textLID(text: String): (String, Double) = {
     if (text != null && text != "") {
-      var language = lidModel.classify(text)(0)._2.name
-      val lnum = math.exp(lidModel.classify(text)(0)._1)
-      val denom = lidModel.classify(text).foldLeft(0.0) { (a, b) => a + math.exp(b._1) }
+      val classify1: Array[(Double, Symbol)] = lidModel.classify(text)
+      val firstResult: (Double, Symbol) = classify1(0)
+      var language = firstResult._2.name
+
+      val lnum = math.exp(firstResult._1)
+      val denom = classify1.foldLeft(0.0) { (a, b) => a + math.exp(b._1) }
       val conf = (lnum / denom) * 100
+      // println(s"$text = $firstResult or $lnum / $denom")
       val answers = (language, conf)
       answers
     } else ("error: empty text string", 0.0)
   }
 
-  def textLIDFull(text: String): Array[(Double, Symbol)] = {
+  def textLIDFull(text: String): Seq[(Symbol, Double)] = {
     if (text != null && text != "") {
-      var result = lidModel.classify(text)
-      result
+      val classify1: Array[(Double, Symbol)] = lidModel.classify(text)
+      classify1.map { case (k, v) => (v, k) }
     } else {
-      Array[(Double, Symbol)]()
+      Seq()
     }
+  }
+
+  def textLIDTopN(text: String, n: Int): Seq[(Symbol, Double)] = {
+    textLIDFull(text).take(n)
   }
 }
 
@@ -139,7 +160,7 @@ class multiparam {
   }
 }
 
-class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierFactory[String] {
+class LID extends InternalPipeRunner[Float] with TrainerTemplate with ClassifierFactory[String] {
   // -------------------------------------------------------------------------------------------------------------------------------------
   // Data formats/readers
   // -------------------------------------------------------------------------------------------------------------------------------------
@@ -188,7 +209,7 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
       new Classifier[String] {
         val fExtractor = docExtractor(bkg, dict, cOrder, wOrder, cutoff).on1 _
 
-        def classify(input: String) = lm.csortScores(fExtractor(input))
+        def classify(input: String): Array[(Double, Symbol)] = lm.csortScores(fExtractor(input))
 
         def regress(input: String) = throw Fatal("Regression not suppored for discrete class problems")
       }
@@ -272,7 +293,7 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
     outfn
   }
 
-  def scoreModel(classifier: Classifier[String], testSplit: List[(String, Symbol)]): Unit = {
+  def scoreModel(classifier: Classifier[String], testSplit: List[(String, Symbol)]): Float = {
     val input = if (testSet.existe) labelledFileInput(testSet) else testSplit
     val labels = input.map(_._2) toList
     val scores = input.map(doc => classifier.classify(doc._1))
@@ -286,21 +307,22 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
         for (((text, label), scores) <- input.toList zip scores)
           f.println("%s %s ::: %s" %(label.name, text, scores.map { case (sc, lab) => lab.name + " -> " + sc }.mkString(" ")));
       }
+    score
   }
 
   // main
   // if given one set of data to train and test on, split it first
   // if no model given, train one and use it
   // finally, score the model
-  def run(args: Array[String]) {
+  def run(args: Array[String]): Float = {
     //    assert(all != "")
     if (!all.isEmpty && !all.existe) {
-      log("ERROR", "Can't find data file at " + new File(all).getAbsolutePath)
-      return
+      log("ERROR", "Can't find " +
+        "data file at " + new File(all).getAbsolutePath)
+      return -1
     }
 
     val (trainSplit, testSplit) = splitData
-
     //    log("INFO", s"trainSet $trainSet trainSplit $trainSplit")
 
     if (!trainSet.isEmpty && !trainSet.existe) {
@@ -329,6 +351,8 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
       if (testSet.existe || testSplit != null) {
         scoreModel(classifier, testSplit)
       }
+      else 0
     }
+    else 0
   }
 }
