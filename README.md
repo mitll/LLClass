@@ -88,6 +88,21 @@ java -jar MITLL_LID.jar LID -train data1.tsv.gz -test data2.tsv.gz
 ###To run with separate train/test sets specify model and score files:
 ``` 
 java -jar MITLL_LID.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
+
+#### The wrapper class can be instantiated inside of another Java/Scala program. There are two functions to score text. The function textLID() returns the language code and a confidence value for that code. The function textLIDFull() returns a set of language labels ranked by most likely to least likely and a confidence value for each one. 
+
+### Use the class mitll.SCORE
+1) create an instance of the SCORE class and Sspecify the LID model
+```
+var newsRunner = mitll.SCORE("path/to/lid/model")
+```
+2) call the function mitll.SCORE.textLID()
+```
+var (language, confidence) = newsRunner.textLID("what language is this text string?")
+```
+3) call the function mitll.SCORE.textLIDFull()
+```
+var langConfArray : Array[(String,Double)] = newsRunner.textLIDFull("what language is this text string?")
 ```
 
 ###sbt behind a firewall

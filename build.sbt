@@ -11,6 +11,8 @@ sbtVersion := "0.13.11"
 // get the assembly plugin, not using https
 resolvers += "scalasbt" at "http://repo.scala-sbt.org/scalasbt/sbt-plugin-releases"
 
+//resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"
+
 mainClass := Some("mitll.MITLL_LID")
 
 //scalaSource in Compile := baseDirectory.value / "src"
@@ -34,3 +36,8 @@ mainClass in assembly := Some("mitll.MITLL_LID")
 
 libraryDependencies ++= Seq(
 )
+
+libraryDependencies += "org.scalactic" %% "scalactic" % "2.2.6"
+
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+

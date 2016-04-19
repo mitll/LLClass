@@ -22,11 +22,11 @@ object MITLL_LID {
       var run = args(0)
       if (run == "multiparam") {
         var c = new multiparam
-        c.main(args.slice(1, args.length).toArray)
+        c.main(args.slice(1, args.length))
       }
       else if (run == "LID") {
-        val slice: Array[String] = args.slice(1, args.length)
-        new LID().main(slice)
+        var c = new LID
+        c.main(args.slice(1, args.length))
       }
       else {
         System.err.println("Usage : expecting first arg to be either multiparam or LID but got " + run)
@@ -35,6 +35,30 @@ object MITLL_LID {
   }
 }
 
+class SCORE(val modeldir: String) {
+  val runner = new LID
+  val lidModel = runner.getClassifier(modeldir.getAbsolutePath)
+
+  def textLID(text: String): (String, Double) = {
+    if (text != null && text != "") {
+      var language = lidModel.classify(text)(0)._2.name
+      val lnum = math.exp(lidModel.classify(text)(0)._1)
+      val denom = lidModel.classify(text).foldLeft(0.0) { (a, b) => a + math.exp(b._1) }
+      val conf = (lnum / denom) * 100
+      val answers = (language, conf)
+      answers
+    } else ("error: empty text string", 0.0)
+  }
+
+  def textLIDFull(text: String): Array[(Double, Symbol)] = {
+    if (text != null && text != "") {
+      var result = lidModel.classify(text)
+      result
+    } else {
+      Array[(Double, Symbol)]()
+    }
+  }
+}
 
 class multiparam {
   def sweepSVM(data: String, exp_name: String) {
@@ -114,6 +138,37 @@ class multiparam {
   }
 }
 
+object ParseTest {
+  val test:String = " es @AnderDelPozo @PesqueWhite hahaha yo tambien me he quedao pillao ahahha"
+  val test2:String = "es @AnderDelPozo @PesqueWhite hahaha yo tambien me he quedao pillao ahahha"
+  val test3:String = "es\t@AnderDelPozo @PesqueWhite hahaha yo tambien me he quedao pillao ahahha"
+
+  // -------------------------------------------------------------------------------------------------------------------------------------
+  val LabelText =
+    """(?s)^(\S+)\t+(.*)$""".r
+
+  val LabelTextSpace =
+    """^\s*(\S+)\s+(.*)$""".r
+
+  def labelled(test:String) : (String,Symbol) = {
+    val ret = test match {
+      case (LabelText(label, text)) => text -> Symbol(label)
+      case (LabelTextSpace(label, text)) => text -> Symbol(label)
+      case _  => "bad" -> Symbol("bad")
+    }
+    ret
+  }
+
+  def main(args:Array[String]):Unit = {
+    val ret =  labelled(test)
+    System.out.println("got " + ret)
+
+    System.out.println("got " + labelled(test2))
+    System.out.println("got " + labelled(test3))
+  }
+
+
+}
 
 class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierFactory[String] {
   // -------------------------------------------------------------------------------------------------------------------------------------
@@ -121,13 +176,16 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
   // -------------------------------------------------------------------------------------------------------------------------------------
   val LabelText =
     """(?s)^(\S+)\t+(.*)$""".r
+
+  val LabelTextSpace =
+    """^\s*(\S+)\s+(.*)$""".r
+
   val skipLabels = (labeltext: (String, Symbol)) => labeltext._1
 
   def labelledFileInput(fn: String) = FileLines(fn).zipWithIndex.map {
-    x => x match {
-      case (LabelText(label, text), idx) => text -> Symbol(label);
-      case (text@_, idx) => throw Fatal("line " + idx + ": '" + text + "' doesn't match!");
-    }
+    case (LabelText(label, text), idx) => text -> Symbol(label);
+    case (LabelTextSpace(label, text), idx) => text -> Symbol(label);
+    case (text@_, idx) => throw Fatal("line " + idx + ": '" + text + "' doesn't match expected format of label followed by text!");
   }
 
   // -------------------------------------------------------------------------------------------------------------------------------------
@@ -183,17 +241,18 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
 
   // main
   def run(args: Array[String]) {
-//    assert(all != "")
+    //    assert(all != "")
     val (trainSplit, testSplit) =
       if (all != "") {
         if (!new File(all).exists) {
-          log("ERROR","Can't find file at " + new File(all).getAbsolutePath)
+          log("ERROR", "Can't find file at " + new File(all).getAbsolutePath)
           return
         }
         val set = HashMap[Symbol, ArrayBuffer[(String, Symbol)]]()
-        labelledFileInput(all) foreach { case (text, label) =>
-          if (!set.isDefinedAt(label)) set(label) = ArrayBuffer[(String, Symbol)]()
-          set(label) += text -> label;
+        labelledFileInput(all) foreach {
+          case (text, label) =>
+            if (!set.isDefinedAt(label)) set(label) = ArrayBuffer[(String, Symbol)]()
+            set(label) += text -> label;
         }
         datasetBreakdown(set)
         val strat = stratifyDataset(set)
@@ -203,6 +262,9 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
       else Tuple2(null, null)
     val trainer = modelTrainer
 
+//    log("INFO", s"trainSet $trainSet trainSplit $trainSplit")
+
+    if (!trainSet.isEmpty && !trainSet.existe) log("WARN",s"Can't find training set at $trainSet")
     val classifier =
       if (trainSet.existe || trainSplit != null) {
         log("INFO", "Starting training...")
@@ -222,7 +284,6 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
         //        }
         //        pw.close
 
-
         val vectors = prepped |>: countTokens2 _ * counts2fv(dict, unk = true) * norm(bkg = bkgmodel, cutoff = cutoff) toList
 
         log("INFO", "There are %d vectors in training", vectors.length)
@@ -232,7 +293,9 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
         // save
         val outfn =
           if (modelfn == "") {
-            val tf = java.io.File.createTempFile("tmp", "mod"); tf.deleteOnExit(); tf.getAbsolutePath
+            val tf = java.io.File.createTempFile("tmp", "mod")
+            tf.deleteOnExit()
+            tf.getAbsolutePath
           }
           else modelfn
 
@@ -252,23 +315,35 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
 
         getClassifier(outfn); // prep the classifier for running examples
       }
-      else getClassifier(modelfn)
+      else {
+        if (modelfn.isEmpty) {
+          log("WARN","Expecting model file parameter or train param")
+          null
+        }
+        else {
+          getClassifier(modelfn)
+        }
+      }
 
     // classify
-    if (testSet.existe || testSplit != null) {
-      val input = if (testSet.existe) labelledFileInput(testSet) else testSplit
-      val labels = input.map(_._2) toList
-      val scores = input.map(doc => classifier.classify(doc._1))
-      val (score, confmat) = scoreClassification(scores zip labels)
 
-      log("INFO", "# of trials: " + labels.length)
-      for (c <- confmat) log("INFO", c)
-      log("INFO", "accuracy = %f", score)
-      if (scorefn != "")
-        withPrint(scorefn) { f =>
-          for (((text, label), scores) <- input.toList zip scores)
-            f.println("%s %s ::: %s" %(label.name, text, scores.map { case (sc, lab) => lab.name + " -> " + sc }.mkString(" ")));
-        }
+    if (classifier != null) {
+      if (testSet.existe) log("INFO",s"Scoring test set $testSet")
+      if (testSet.existe || testSplit != null) {
+        val input = if (testSet.existe) labelledFileInput(testSet) else testSplit
+        val labels = input.map(_._2) toList
+        val scores = input.map(doc => classifier.classify(doc._1))
+        val (score, confmat) = scoreClassification(scores zip labels)
+
+        log("INFO", "# of trials: " + labels.length)
+        for (c <- confmat) log("INFO", c)
+        log("INFO", "accuracy = %f", score)
+        if (scorefn != "")
+          withPrint(scorefn) { f =>
+            for (((text, label), scores) <- input.toList zip scores)
+              f.println("%s %s ::: %s" %(label.name, text, scores.map { case (sc, lab) => lab.name + " -> " + sc }.mkString(" ")));
+          }
+      }
     }
   }
 }
