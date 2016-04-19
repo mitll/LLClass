@@ -3,10 +3,10 @@
  *  Copyright 2005-2016 Massachusetts Institute of Technology, Lincoln Laboratory
  *  Revision: 0.2
  */
-package mitll
+package mitll.lid
 import java.io.{FileReader, PrintStream, Reader}
 
-import mitll.utilities._
+import mitll.lid.utilities._
 import org.apache.commons.lang3.text.WordUtils._
 
 import scala.collection.mutable.{HashMap, LinkedHashMap, ListBuffer, Map}

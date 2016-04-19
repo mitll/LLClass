@@ -5,7 +5,7 @@
  *  Revision: 0.2
  */
 
-package mitll
+package mitll.lid
 import java.io._
 import java.util.zip._
 import javax.swing.filechooser.FileSystemView

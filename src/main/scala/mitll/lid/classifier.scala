@@ -5,7 +5,7 @@
  *  Revision: 0.2
  */
 
-package mitll
+package mitll.lid
 import scala.collection.mutable.{ArrayBuffer, Map}
 
 // [TODO] need a library interface that allows:
@@ -57,7 +57,7 @@ trait TrainerTemplate extends InternalPipeSupport {
     case "perceptron" => (w, l) => new Perceptron(w, l);
     case _ => throw Fatal("unkown trainer type");
   }
-  def splitLabelledData[T](set : Map[Symbol, ArrayBuffer[(T, Symbol)]], splitRatio : Float) = {
+  def splitLabelledData[T](set : Map[Symbol, ArrayBuffer[(T, Symbol)]], splitRatio : Float): (List[(T, Symbol)], List[(T, Symbol)]) = {
     val skeys = set.keys.toList.sortWith(_.name > _.name)
     if (splitRatio > 0) // take from the beginning
       skeys.flatMap { lab => set(lab).drop(math.round(set(lab).length * splitRatio)) } -> skeys.flatMap { lab => set(lab).take(math.round(set(lab).length * splitRatio)) }

@@ -3,14 +3,14 @@
  *  Copyright 2005-2016 Massachusetts Institute of Technology, Lincoln Laboratory
  *  Revision: 0.2
  */
-package mitll
+package mitll.lid
 
 import java.lang.management._
 import java.sql.{Connection, DriverManager}
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import mitll.utilities._
+import mitll.lid.utilities._
 import org.apache.commons.io.filefilter.WildcardFileFilter
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}

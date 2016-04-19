@@ -4,13 +4,14 @@
  *  Revision: 0.2
  */
 
-package mitll
+package mitll.lid
 
 import java.io.File
 
-import mitll.utilities._
+import mitll.lid.utilities._
 
-import scala.collection.mutable.{ArrayBuffer, HashMap, Map}
+import scala.collection.mutable
+import scala.collection.mutable.{ArrayBuffer, Map}
 
 
 object MITLL_LID {
@@ -138,38 +139,6 @@ class multiparam {
   }
 }
 
-object ParseTest {
-  val test:String = " es @AnderDelPozo @PesqueWhite hahaha yo tambien me he quedao pillao ahahha"
-  val test2:String = "es @AnderDelPozo @PesqueWhite hahaha yo tambien me he quedao pillao ahahha"
-  val test3:String = "es\t@AnderDelPozo @PesqueWhite hahaha yo tambien me he quedao pillao ahahha"
-
-  // -------------------------------------------------------------------------------------------------------------------------------------
-  val LabelText =
-    """(?s)^(\S+)\t+(.*)$""".r
-
-  val LabelTextSpace =
-    """^\s*(\S+)\s+(.*)$""".r
-
-  def labelled(test:String) : (String,Symbol) = {
-    val ret = test match {
-      case (LabelText(label, text)) => text -> Symbol(label)
-      case (LabelTextSpace(label, text)) => text -> Symbol(label)
-      case _  => "bad" -> Symbol("bad")
-    }
-    ret
-  }
-
-  def main(args:Array[String]):Unit = {
-    val ret =  labelled(test)
-    System.out.println("got " + ret)
-
-    System.out.println("got " + labelled(test2))
-    System.out.println("got " + labelled(test3))
-  }
-
-
-}
-
 class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierFactory[String] {
   // -------------------------------------------------------------------------------------------------------------------------------------
   // Data formats/readers
@@ -206,7 +175,7 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
   // -------------------------------------------------------------------------------------------------------------------------------------
   // ClassifierFactory
   // -------------------------------------------------------------------------------------------------------------------------------------
-  def getClassifier(fn: String) = {
+  def getClassifier(fn: String): Classifier[String] = {
     assert(fn.existe, "Can't find LID model file: " + fn)
 
     // this section of code needs to be changed in order to load existing models
@@ -238,86 +207,114 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
     "word-ngram-order" -> Arg(wOrder _, wOrder_= _, "Word N-gram order for feature extraction"),
     "char-ngram-order" -> Arg(cOrder _, cOrder_= _, "Character N-gram order for feature extraction"))
 
+  def splitData: (List[(String, Symbol)], List[(String, Symbol)]) = {
+    if (all != "") {
+      val set = mutable.HashMap[Symbol, ArrayBuffer[(String, Symbol)]]()
+      labelledFileInput(all) foreach {
+        case (text, label) =>
+          if (!set.isDefinedAt(label)) set(label) = ArrayBuffer[(String, Symbol)]()
+          set(label) += text -> label;
+      }
+      datasetBreakdown(set)
+      val strat = stratifyDataset(set)
+      datasetBreakdown(strat)
+      splitLabelledData(strat, split)
+    }
+    else Tuple2(null, null)
+  }
+
+  def trainModel(trainer: (Array[Array[Double]], Array[Symbol]) => LinearModel, trainSplit: List[(String, Symbol)]): String = {
+    log("INFO", "Starting training...")
+
+    val input = if (trainSet.existe) labelledFileInput(trainSet) else trainSplit
+    val labels = input.map(_._2) toList
+    val prepped = input |>: skipLabels * preprocess(cOrder, wOrder)
+    val ((dict, index, bkgmodel), x) = prepped =+>: bkgS(mincount = minCount, prune = prune)
+
+    // save dict to file for printing heavy hitters (mira.scala 178 - commented out)
+    //        var fname = "id_my_mturk_raw"
+    //        var outfile = "dicts/"+fname+".txt"
+    //        val pw = new PrintWriter(new File(outfile))
+    //        for (i <- 0 to (index.length-1)) {
+    //          var outstring = i + " " + index(i) + "\n"
+    //          pw.write(outstring)
+    //        }
+    //        pw.close
+
+    val vectors = prepped |>: countTokens2 _ * counts2fv(dict, unk = true) * norm(bkg = bkgmodel, cutoff = cutoff) toList
+
+    log("INFO", "There are %d vectors in training", vectors.length)
+    log("INFO", "There are %d dimensions in the feature space", index.length)
+    val (model, v) = (vectors zip labels) =+>: train(index.length, trainer, average, iter)
+
+    // save
+    val outfn =
+      if (modelfn == "") {
+        val tf = java.io.File.createTempFile("tmp", "mod")
+        tf.deleteOnExit()
+        tf.getAbsolutePath
+      }
+      else modelfn
+
+    log("INFO", "Training complete.")
+
+    // this section of code needs to be serialized to avoid serialUID errors
+    // when loading up models with different java versions
+    withObjectOutput(outfn) { f =>
+      f.writeObject(cOrder)
+      f.writeObject(wOrder)
+      f.writeObject(cutoff)
+      f.writeObject(dict)
+      f.writeObject(index)
+      bkgmodel.writeObj(f)
+      model.save(f);
+    }
+    outfn
+  }
+
+  def scoreModel(classifier: Classifier[String], testSplit: List[(String, Symbol)]): Unit = {
+    val input = if (testSet.existe) labelledFileInput(testSet) else testSplit
+    val labels = input.map(_._2) toList
+    val scores = input.map(doc => classifier.classify(doc._1))
+    val (score, confmat) = scoreClassification(scores zip labels)
+
+    log("INFO", "# of trials: " + labels.length)
+    for (c <- confmat) log("INFO", c)
+    log("INFO", "accuracy = %f", score)
+    if (scorefn != "")
+      withPrint(scorefn) { f =>
+        for (((text, label), scores) <- input.toList zip scores)
+          f.println("%s %s ::: %s" %(label.name, text, scores.map { case (sc, lab) => lab.name + " -> " + sc }.mkString(" ")));
+      }
+  }
 
   // main
+  // if given one set of data to train and test on, split it first
+  // if no model given, train one and use it
+  // finally, score the model
   def run(args: Array[String]) {
     //    assert(all != "")
-    val (trainSplit, testSplit) =
-      if (all != "") {
-        if (!new File(all).exists) {
-          log("ERROR", "Can't find file at " + new File(all).getAbsolutePath)
-          return
-        }
-        val set = HashMap[Symbol, ArrayBuffer[(String, Symbol)]]()
-        labelledFileInput(all) foreach {
-          case (text, label) =>
-            if (!set.isDefinedAt(label)) set(label) = ArrayBuffer[(String, Symbol)]()
-            set(label) += text -> label;
-        }
-        datasetBreakdown(set)
-        val strat = stratifyDataset(set)
-        datasetBreakdown(strat)
-        splitLabelledData(strat, split)
-      }
-      else Tuple2(null, null)
-    val trainer = modelTrainer
+    if (!all.isEmpty && !all.existe) {
+      log("ERROR", "Can't find data file at " + new File(all).getAbsolutePath)
+      return
+    }
 
-//    log("INFO", s"trainSet $trainSet trainSplit $trainSplit")
+    val (trainSplit, testSplit) = splitData
 
-    if (!trainSet.isEmpty && !trainSet.existe) log("WARN",s"Can't find training set at $trainSet")
+    //    log("INFO", s"trainSet $trainSet trainSplit $trainSplit")
+
+    if (!trainSet.isEmpty && !trainSet.existe) {
+      log("WARN", s"Can't find training set at $trainSet")
+    }
+
     val classifier =
       if (trainSet.existe || trainSplit != null) {
-        log("INFO", "Starting training...")
-
-        val input = if (trainSet.existe) labelledFileInput(trainSet) else trainSplit
-        val labels = input.map(_._2) toList
-        val prepped = input |>: skipLabels * preprocess(cOrder, wOrder)
-        val ((dict, index, bkgmodel), x) = prepped =+>: bkgS(mincount = minCount, prune = prune)
-
-        // save dict to file for printing heavy hitters (mira.scala 178 - commented out)
-        //        var fname = "id_my_mturk_raw"
-        //        var outfile = "dicts/"+fname+".txt"
-        //        val pw = new PrintWriter(new File(outfile))
-        //        for (i <- 0 to (index.length-1)) {
-        //          var outstring = i + " " + index(i) + "\n"
-        //          pw.write(outstring)
-        //        }
-        //        pw.close
-
-        val vectors = prepped |>: countTokens2 _ * counts2fv(dict, unk = true) * norm(bkg = bkgmodel, cutoff = cutoff) toList
-
-        log("INFO", "There are %d vectors in training", vectors.length)
-        log("INFO", "There are %d dimensions in the feature space", index.length)
-        val (model, v) = (vectors zip labels) =+>: train(index.length, trainer, average, iter)
-
-        // save
-        val outfn =
-          if (modelfn == "") {
-            val tf = java.io.File.createTempFile("tmp", "mod")
-            tf.deleteOnExit()
-            tf.getAbsolutePath
-          }
-          else modelfn
-
-        log("INFO", "Training complete.")
-
-        // this section of code needs to be serialized to avoid serialUID errors
-        // when loading up models with different java versions
-        withObjectOutput(outfn) { f =>
-          f.writeObject(cOrder)
-          f.writeObject(wOrder)
-          f.writeObject(cutoff)
-          f.writeObject(dict)
-          f.writeObject(index)
-          bkgmodel.writeObj(f)
-          model.save(f);
-        }
-
+        val outfn = trainModel(modelTrainer, trainSplit)
         getClassifier(outfn); // prep the classifier for running examples
       }
       else {
         if (modelfn.isEmpty) {
-          log("WARN","Expecting model file parameter or train param")
+          log("WARN", "Expecting model file parameter or train param")
           null
         }
         else {
@@ -328,21 +325,9 @@ class LID extends InternalPipeRunner[Unit] with TrainerTemplate with ClassifierF
     // classify
 
     if (classifier != null) {
-      if (testSet.existe) log("INFO",s"Scoring test set $testSet")
+      if (testSet.existe) log("INFO", s"Scoring test set $testSet")
       if (testSet.existe || testSplit != null) {
-        val input = if (testSet.existe) labelledFileInput(testSet) else testSplit
-        val labels = input.map(_._2) toList
-        val scores = input.map(doc => classifier.classify(doc._1))
-        val (score, confmat) = scoreClassification(scores zip labels)
-
-        log("INFO", "# of trials: " + labels.length)
-        for (c <- confmat) log("INFO", c)
-        log("INFO", "accuracy = %f", score)
-        if (scorefn != "")
-          withPrint(scorefn) { f =>
-            for (((text, label), scores) <- input.toList zip scores)
-              f.println("%s %s ::: %s" %(label.name, text, scores.map { case (sc, lab) => lab.name + " -> " + sc }.mkString(" ")));
-          }
+        scoreModel(classifier, testSplit)
       }
     }
   }

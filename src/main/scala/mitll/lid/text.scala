@@ -3,8 +3,8 @@
  *  Copyright 2005-2016 Massachusetts Institute of Technology, Lincoln Laboratory
  *  Revision: 0.2
  */
-package mitll
-import mitll.utilities._
+package mitll.lid
+import mitll.lid.utilities._
 import org.jtr.transliterate._
 
 import scala.collection.mutable.{ArrayBuffer, HashMap, Map}

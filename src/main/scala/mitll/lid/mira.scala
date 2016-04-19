@@ -3,11 +3,11 @@
  *  Copyright 2005-2016 Massachusetts Institute of Technology, Lincoln Laboratory
  *  Revision: 0.2
  */
-package mitll
+package mitll.lid
 
 import java.io.{FileInputStream, ObjectOutputStream}
 
-import mitll.utilities._
+import mitll.lid.utilities._
 
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.util.Sorting._

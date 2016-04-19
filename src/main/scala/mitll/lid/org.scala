@@ -4,10 +4,10 @@
  *  Revision: 0.2
  */
 
-package mitll
+package mitll.lid
 import java.io.{File, FileOutputStream, PrintStream}
 
-import mitll.utilities._
+import mitll.lid.utilities._
 
 object convert extends ArgHandler {
   val program = "org.convert"

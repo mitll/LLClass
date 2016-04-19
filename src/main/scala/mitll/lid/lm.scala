@@ -3,7 +3,7 @@
  *  Copyright 2005-2016 Massachusetts Institute of Technology, Lincoln Laboratory
  *  Revision: 0.2
  */
-package mitll
+package mitll.lid
 import scala.collection.mutable.{HashMap, ListBuffer, Map}
 import scala.io.{BufferedSource, Source}
 

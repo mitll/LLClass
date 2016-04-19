@@ -4,11 +4,11 @@
  *  Revision: 0.2
  */
 
-package mitll
+package mitll.lid
 import java.io.{BufferedOutputStream, FileOutputStream, PrintStream}
 import java.lang.reflect.{Field, Method}
 
-import mitll.utilities._
+import mitll.lid.utilities._
 
 import scala.collection.Iterable
 import scala.collection.immutable.Vector
