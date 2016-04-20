@@ -20,12 +20,16 @@
 package mitll.lid
 
 import java.io.File
+import java.net.URLEncoder
 
 import com.typesafe.scalalogging._
 import mitll.lid.utilities._
 
+import scala.Iterable
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, Map}
+import scala.collection.parallel.ParIterable
+import scala.io.Source
 
 object MITLL_LID extends LazyLogging {
   def main(args: Array[String]) {
@@ -162,7 +166,7 @@ class multiparam {
   }
 }
 
-class LID extends InternalPipeRunner[Float] with TrainerTemplate with ClassifierFactory[String] with LazyLogging {
+class LID extends InternalPipeRunner[Float] with TrainerTemplate with ClassifierFactory[String] {
   // -------------------------------------------------------------------------------------------------------------------------------------
   // Data formats/readers
   // -------------------------------------------------------------------------------------------------------------------------------------
@@ -214,6 +218,35 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
         def classify(input: String): Array[(Double, Symbol)] = lm.csortScores(fExtractor(input))
 
         def regress(input: String) = throw Fatal("Regression not suppored for discrete class problems")
+      }
+    }
+  }
+
+  // Use langid as a scoring service
+  // assumes we've downloaded and installed langid.py : https://github.com/saffsd/langid.py
+  // and it's running as a webservice at http://172.25.180.54:9008
+  def getLangidClassifier = {
+    new Classifier[String] {
+      val fExtractor = null
+
+      def regress(input: String) = throw Fatal("Regression not suppored for discrete class problems")
+
+      // I should probably use a json library...
+      override def classify(input: String): Array[(Double, Symbol)] = {
+        val enc = URLEncoder.encode(input)
+        val url: String = "http://172.25.180.54:9008/detect?q=\"" + enc + "\""
+
+        val html = Source.fromURL(url)
+        val s = html.mkString
+        val split: Array[String] = s.split("language\": \"")
+        val split2: Array[String] = s.split("confidence\": ")
+
+        val tail: String = split(1)
+        var resp = tail.split("\"").head
+        if (resp.endsWith(".txt")) resp = resp.dropRight(4)
+        val conf = split2(1).split("\"").head.split(",").head
+        val dv = conf.toDouble
+        Array(dv -> Symbol(resp))
       }
     }
   }
@@ -295,11 +328,46 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     outfn
   }
 
+  def parScoreModel(classifier: Classifier[String], testSplit: List[(String, Symbol)]): Float = {
+    val before = System.currentTimeMillis()
+
+    val input: Iterable[(String, Symbol)] = if (testSet.existe) labelledFileInput(testSet) else testSplit
+    val labels: List[Symbol] = input.map(_._2) toList
+    val beforeC = System.currentTimeMillis()
+
+    val parinput = input.par
+    val scores: ParIterable[(Array[(Double, Symbol)], Symbol)] = parinput.map(doc => classifier.classify(doc._1) -> doc._2)
+    val scoresSeq: Iterable[(Array[(Double, Symbol)], Symbol)] = scores.seq
+
+    val (score, confmat) = scoreClassification(scoresSeq)
+
+    val afterC = System.currentTimeMillis()
+    logger.debug("took " + (afterC - beforeC) + " millis to classify " + labels.length + " items")
+
+    val after = System.currentTimeMillis()
+    logger.debug("took " + (after - before) + " millis to score " + labels.length + " items")
+
+    log("INFO", "# of trials: " + labels.length)
+    for (c <- confmat) log("INFO", c)
+    log("INFO", "accuracy = %f", score)
+    if (scorefn != "")
+      withPrint(scorefn) { f =>
+        for (((text, label), scores) <- input.toList zip scoresSeq)
+          f.println("%s %s ::: %s" %(label.name, text, scoresSeq.map { case (sc, lab) => lab.name + " -> " + sc }.mkString(" ")));
+      }
+    score
+  }
+
   def scoreModel(classifier: Classifier[String], testSplit: List[(String, Symbol)]): Float = {
     val input = if (testSet.existe) labelledFileInput(testSet) else testSplit
     val labels = input.map(_._2) toList
+    val beforeC = System.currentTimeMillis()
+
     val scores = input.map(doc => classifier.classify(doc._1))
     val (score, confmat) = scoreClassification(scores zip labels)
+    val afterC = System.currentTimeMillis()
+    logger.debug("scoreModel took " + (afterC - beforeC) + " millis to classify " + labels.length + " items")
+
 
     logger.info("# of trials: " + labels.length)
     for (c <- confmat) logger.info(c)
@@ -325,26 +393,24 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     }
 
     val (trainSplit, testSplit) = splitData
-    //    logger.info(s"trainSet $trainSet trainSplit $trainSplit")
 
     if (!trainSet.isEmpty && !trainSet.existe) {
       log("WARN", s"Can't find training set at $trainSet")
     }
 
-    val classifier =
-      if (trainSet.existe || trainSplit != null) {
-        val outfn = trainModel(modelTrainer, trainSplit)
-        getClassifier(outfn); // prep the classifier for running examples
+    val classifier = if (trainSet.existe || trainSplit != null) {
+      val outfn = trainModel(modelTrainer, trainSplit)
+      getClassifier(outfn); // prep the classifier for running examples
+    }
+    else {
+      if (modelfn.isEmpty) {
+        log("WARN", "Expecting model file parameter or train param")
+        null
       }
       else {
-        if (modelfn.isEmpty) {
-          log("WARN", "Expecting model file parameter or train param")
-          null
-        }
-        else {
-          getClassifier(modelfn)
-        }
+        getClassifier(modelfn)
       }
+    }
 
     // classify
 
@@ -352,6 +418,19 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
       if (testSet.existe) logger.info(s"Scoring test set $testSet")
       if (testSet.existe || testSplit != null) {
         scoreModel(classifier, testSplit)
+      }
+      else 0
+    }
+    else 0
+  }
+
+  def testLangid(testfile: String): Float = {
+    val classifier = getLangidClassifier
+    testSet = testfile
+    if (classifier != null) {
+      if (testSet.existe) logger.info(s"Scoring test set $testSet")
+      if (testSet.existe) {
+        scoreModel(classifier, null)
       }
       else 0
     }

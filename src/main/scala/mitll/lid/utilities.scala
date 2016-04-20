@@ -588,5 +588,21 @@ object utilities {
     def close = underlying.close
   }
 
+/*  def makeOneFilePerLanguage(lidNativeDocs: String, dest: String) = {
+    new File(dest).mkdir()
+    val LabelTextSpace =
+      """^\s*(\S+)\s+(.*)$""".r
 
+    val lines: FileLines[String] = FileLines(lidNativeDocs)
+    var labelToFile = Map[String, FileWriter]()
+    lines.foreach {
+      case (LabelTextSpace(label, text)) => {
+        val writer = labelToFile.getOrElse(label, new FileWriter(dest + File.separator + label + ".txt", true))
+        labelToFile += (label -> writer)
+        writer.write(text + "\n")
+
+      };
+    }
+    labelToFile.values.foreach { f => f.close() }
+  }*/
 }

@@ -19,6 +19,8 @@
  */
 
 package mitll.lid
+import com.typesafe.scalalogging.LazyLogging
+
 import scala.collection.mutable.{ArrayBuffer, Map}
 
 // [TODO] need a library interface that allows:
@@ -38,7 +40,7 @@ trait Classifier[I] {
 trait ClassifierFactory[I] {
   def getClassifier(dir : String) : Classifier[I]
 }
-trait TrainerTemplate extends InternalPipeSupport {
+trait TrainerTemplate extends InternalPipeSupport with LazyLogging {
   var (parts, trainSet, all, split, modelfn, testSet, scorefn, abname, tokens, merger) = (1, "", "", 0.1f, "", "", "", "", "", "")
   var (trainAlg, average, iter, kBest, slack, svmC, gamma) = ("mira", true, 20, 4, 0.01f, 1.0f, 0.02f)
   config += "General"   -> Params("log"           -> Arg(logfn _, logfn_= _,       "Log to this file instead of STDERR"),

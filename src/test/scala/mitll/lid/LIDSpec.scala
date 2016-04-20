@@ -20,8 +20,11 @@
 package mitll.lid
 
 import java.io.File
+import java.net.URLEncoder
 
 import org.scalatest._
+
+import scala.io.Source
 
 // -all eval/no_nl_da_en_5k.tsv.gz -split 0.15 -iterations 10
 // LID -all eval/no_nl_da_en_500.tsv.gz -split 0.15 -iterations 10
@@ -65,9 +68,9 @@ class LIDSpec extends FlatSpec with Matchers {
   }
 
   it should "save out a model, log and score files" in {
-    val modelFile: String = "news4L.mod"
-    val logFile: String = "news4L.log"
-    val scoreFile: String = "news4L.score"
+    val modelFile = "news4L.mod"
+    val logFile = "news4L.log"
+    val scoreFile = "news4L.score"
     val args = "-all test/news4L-500each.tsv.gz -split 0.15 -iterations 30 -model " + modelFile + " -log " + logFile + " -score " + scoreFile
     val accuracy = new LID().ep(args.split(" "))
 
@@ -103,7 +106,7 @@ class LIDSpec extends FlatSpec with Matchers {
 
   it should "score against a model returning top 2 scores" in {
     val newsRunner = new mitll.lid.Scorer("models/news4L.mod")
-    val allScores = newsRunner.textLIDTopN("what language is this text string?",2)
+    val allScores = newsRunner.textLIDTopN("what language is this text string?", 2)
     allScores.foreach { p =>
       val score = p._2
       val formatted = f"$score%1.2f"
