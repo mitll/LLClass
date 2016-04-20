@@ -21,13 +21,13 @@ package mitll.lid
 
 import java.io.File
 
+import com.typesafe.scalalogging._
 import mitll.lid.utilities._
 
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, Map}
 
-
-object MITLL_LID {
+object MITLL_LID extends LazyLogging {
   def main(args: Array[String]) {
     if (args.length < 2) {
       System.err.println("Usage : expecting args like : LID -all test/original4.tsv.gz")
@@ -35,23 +35,24 @@ object MITLL_LID {
     else {
       var run = args(0)
       if (run == "multiparam") {
-        var c = new multiparam
-        c.main(args.slice(1, args.length))
+        new multiparam().main(args.slice(1, args.length))
       }
       else if (run == "LID") {
-        var c = new LID
-        c.main(args.slice(1, args.length))
+        new LID().main(args.slice(1, args.length))
       }
       else {
-        System.err.println("Usage : expecting first arg to be either multiparam or LID but got " + run)
+        logger.error("Usage : expecting first arg to be either multiparam or LID but got " + run)
       }
     }
   }
 }
 
-class Scorer(val modeldir: String) {
+class Scorer(val modeldir: String) extends LazyLogging {
   val runner = new LID
+  val before = System.currentTimeMillis()
   val lidModel = runner.getClassifier(modeldir.getAbsolutePath)
+  val now = System.currentTimeMillis()
+  logger.debug("took " + (now - before) + " millis to load model")
 
   def textLID(text: String): (String, Double) = {
     if (text != null && text != "") {
@@ -68,23 +69,24 @@ class Scorer(val modeldir: String) {
     } else ("error: empty text string", 0.0)
   }
 
-  def textLIDFull(text: String): Seq[(Symbol, Double)] = {
+  def textLIDFull(text: String): Array[(Symbol, Double)] = {
     if (text != null && text != "") {
       val classify1: Array[(Double, Symbol)] = lidModel.classify(text)
-      classify1.map { case (k, v) => (v, k) }
+      val map: Array[(Symbol, Double)] = classify1.map { case (k, v) => (v, k) }
+      map
     } else {
-      Seq()
+      Array()
     }
   }
 
-  def textLIDTopN(text: String, n: Int): Seq[(Symbol, Double)] = {
+  def textLIDTopN(text: String, n: Int): Array[(Symbol, Double)] = {
     textLIDFull(text).take(n)
   }
 }
 
 class multiparam {
   def sweepSVM(data: String, exp_name: String) {
-    var coarseC = (-5 to 16) map {
+    var coarseC: IndexedSeq[Double] = (-5 to 16) map {
       math.pow(2, _)
     }
     var coarseGamma = (-5 to 6) map {
@@ -160,7 +162,7 @@ class multiparam {
   }
 }
 
-class LID extends InternalPipeRunner[Float] with TrainerTemplate with ClassifierFactory[String] {
+class LID extends InternalPipeRunner[Float] with TrainerTemplate with ClassifierFactory[String] with LazyLogging {
   // -------------------------------------------------------------------------------------------------------------------------------------
   // Data formats/readers
   // -------------------------------------------------------------------------------------------------------------------------------------
@@ -245,7 +247,7 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
   }
 
   def trainModel(trainer: (Array[Array[Double]], Array[Symbol]) => LinearModel, trainSplit: List[(String, Symbol)]): String = {
-    log("INFO", "Starting training...")
+    logger.info("Starting training...")
 
     val input = if (trainSet.existe) labelledFileInput(trainSet) else trainSplit
     val labels = input.map(_._2) toList
@@ -264,8 +266,8 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
 
     val vectors = prepped |>: countTokens2 _ * counts2fv(dict, unk = true) * norm(bkg = bkgmodel, cutoff = cutoff) toList
 
-    log("INFO", "There are %d vectors in training", vectors.length)
-    log("INFO", "There are %d dimensions in the feature space", index.length)
+    logger.info("There are %d vectors in training", vectors.length)
+    logger.info("There are %d dimensions in the feature space", index.length)
     val (model, v) = (vectors zip labels) =+>: train(index.length, trainer, average, iter)
 
     // save
@@ -277,7 +279,7 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
       }
       else modelfn
 
-    log("INFO", "Training complete.")
+    logger.info("Training complete.")
 
     // this section of code needs to be serialized to avoid serialUID errors
     // when loading up models with different java versions
@@ -299,9 +301,9 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     val scores = input.map(doc => classifier.classify(doc._1))
     val (score, confmat) = scoreClassification(scores zip labels)
 
-    log("INFO", "# of trials: " + labels.length)
-    for (c <- confmat) log("INFO", c)
-    log("INFO", "accuracy = %f", score)
+    logger.info("# of trials: " + labels.length)
+    for (c <- confmat) logger.info(c)
+    logger.info(s"accuracy = $score")
     if (scorefn != "")
       withPrint(scorefn) { f =>
         for (((text, label), scores) <- input.toList zip scores)
@@ -323,7 +325,7 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     }
 
     val (trainSplit, testSplit) = splitData
-    //    log("INFO", s"trainSet $trainSet trainSplit $trainSplit")
+    //    logger.info(s"trainSet $trainSet trainSplit $trainSplit")
 
     if (!trainSet.isEmpty && !trainSet.existe) {
       log("WARN", s"Can't find training set at $trainSet")
@@ -347,7 +349,7 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     // classify
 
     if (classifier != null) {
-      if (testSet.existe) log("INFO", s"Scoring test set $testSet")
+      if (testSet.existe) logger.info(s"Scoring test set $testSet")
       if (testSet.existe || testSplit != null) {
         scoreModel(classifier, testSplit)
       }

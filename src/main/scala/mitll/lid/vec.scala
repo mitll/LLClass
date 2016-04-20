@@ -179,4 +179,3 @@ object FV {
 
   def zero = new FV(zeroF)
 }
-

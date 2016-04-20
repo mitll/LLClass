@@ -77,7 +77,7 @@ class LIDSpec extends FlatSpec with Matchers {
     new File(scoreFile) should exist
   }
 
-  it should "test against a saved model" in {
+  it should "score against a saved model" in {
     val args = "-test test/news4L-500each.tsv -model models/news4L.mod"
     val accuracy = new LID().ep(args.split(" "))
     accuracy shouldBe 0.9965f +- 0.001f
@@ -109,5 +109,9 @@ class LIDSpec extends FlatSpec with Matchers {
       val formatted = f"$score%1.2f"
       println(p._1.name + " = " + formatted)
     }
+  }
+
+  it should "show usage" in {
+    MITLL_LID.main(Array())
   }
 }

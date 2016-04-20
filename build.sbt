@@ -35,9 +35,17 @@ libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % 
 mainClass in assembly := Some("mitll.MITLL_LID")
 
 libraryDependencies ++= Seq(
+
 )
 
 libraryDependencies += "org.scalactic" %% "scalactic" % "2.2.6"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+
+libraryDependencies += "ch.qos.logback" %  "logback-classic" % "1.1.7"
+
+libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0"
+
+libraryDependencies +=  "com.lihaoyi" %% "sourcecode" % "0.1.1" // Scala-JVM
+
 
