@@ -418,7 +418,6 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     if (classifier != null) {
       if (testSet.existe) logger.info(s"Scoring test set $testSet")
       if (testSet.existe || testSplit != null) {
-        println("par score " +parScore)
         if (parScore) {
           parScoreModel(classifier, testSplit)
         }

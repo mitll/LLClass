@@ -27,7 +27,7 @@ import org.scalatest._
 
 class EvalSpec extends FlatSpec with Matchers with LazyLogging {
   ignore should "train a model over recall corpus" in {
-    val args = "-all test/sortedRecallCorpus.tsv -split 0.15 -iterations 10"
+    val args = "-all test/recallCorpus.tsv -split 0.15 -iterations 10"
     val overallAccuracy = new LID().ep(args.split(" "))
     val expected = 0.870f
     overallAccuracy shouldBe expected +- 0.001f
@@ -52,7 +52,7 @@ class EvalSpec extends FlatSpec with Matchers with LazyLogging {
     accuracy shouldBe 0.921f +- 0.001f
   }
 
-  it should "merge precision eval json" in {
+  ignore should "merge precision eval json" in {
     val originJSON   = "test/precision.json"
     val labelFile    = "test/precision_oriented.tsv"
     val outputCorpus = "test/precisionCorpus.tsv"
@@ -72,6 +72,7 @@ class EvalSpec extends FlatSpec with Matchers with LazyLogging {
     true shouldBe true
   }
 
+  // TODO : filter out small classes, e.g. or
   def makeOurFormat(originJSON: String, labelFile: String, outputCorpus: String): Unit = {
     var idToContent = Map[String, String]()
     FileLines(originJSON).foreach {
@@ -82,7 +83,7 @@ class EvalSpec extends FlatSpec with Matchers with LazyLogging {
         if (id.trim.isEmpty) {
           logger.error("missing id for " + line)
         }
-        else logger.debug("id '" +id+ "'")
+      //  else logger.debug("id '" +id+ "'")
         idToContent += (id -> content.trim)
     }
 
@@ -91,10 +92,17 @@ class EvalSpec extends FlatSpec with Matchers with LazyLogging {
     FileLines(labelFile).foreach {
       line =>
         val split = line.split("\\s++")
-        idToLabel += (split(1) -> split(0))
+        val id = split(1)
+        val label = split(0)
+        if (label.nonEmpty) {
+          idToLabel += (id -> label)
+        }
     }
 
     println("labels " + idToLabel.size + " id->content " + idToContent.size)
+    var unique = Set[String]()
+    unique ++= idToLabel.values
+    println("labels (" +unique.size+ ") : " +unique.mkString(","))
 
     new File(outputCorpus).delete()
     val writer = new FileWriter(outputCorpus, true)
@@ -102,11 +110,14 @@ class EvalSpec extends FlatSpec with Matchers with LazyLogging {
     var c = 0
     idToContent foreach {
       case (id, content) =>
-        writer.write(idToLabel.getOrElse(id, "MISSING_ID"))
-        writer.write("\t")
-        writer.write(content)
-        writer.write("\n")
-        c += 1
+        if (idToLabel.isDefinedAt(id)) {
+          val label = idToLabel(id)
+          writer.write(label)
+          writer.write("\t")
+          writer.write(content)
+          writer.write("\n")
+          c += 1
+        }
     }
     writer.close()
     println("wrote " + c + " lines")
