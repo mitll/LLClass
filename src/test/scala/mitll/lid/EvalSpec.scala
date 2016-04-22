@@ -26,10 +26,25 @@ import mitll.lid.utilities.FileLines
 import org.scalatest._
 
 class EvalSpec extends FlatSpec with Matchers with LazyLogging {
-  ignore should "train a model over recall corpus" in {
-    val args = "-all test/recallCorpus.tsv -split 0.15 -iterations 10"
+  ignore should "train a model over movie sentiment corpus" in {
+    val args = "-all test/rt-polaritydata.tsv -split 0.15 -iterations 10"
     val overallAccuracy = new LID().ep(args.split(" "))
-    val expected = 0.870f
+    //    val expected = 0.870f
+    //   overallAccuracy shouldBe expected +- 0.001f
+    true shouldBe true
+  }
+
+  ignore should "train a model over michigan sentiment corpus" in {
+    val args = "-all test/michiganTraining.txt -split 0.15  -iterations 10"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.958f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
+  it should "train a model over recall corpus" in {
+    val args = "-all test/recallCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.923f
     overallAccuracy shouldBe expected +- 0.001f
   }
 
@@ -38,6 +53,14 @@ class EvalSpec extends FlatSpec with Matchers with LazyLogging {
     val overallAccuracy = new LID().ep(args.split(" "))
     val expected = 0.870f
     overallAccuracy shouldBe expected +- 0.001f
+  }
+
+  ignore should "train a model over precision corpus and save it" in {
+    val args = "-all test/precisionCorpus.tsv -split 0.15 -iterations 10 -model precision.mod"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    true shouldBe true
+    //    val expected = 0.870f
+    //    overallAccuracy shouldBe expected +- 0.001f
   }
 
   ignore should "score against a saved model" in {
@@ -53,8 +76,8 @@ class EvalSpec extends FlatSpec with Matchers with LazyLogging {
   }
 
   ignore should "merge precision eval json" in {
-    val originJSON   = "test/precision.json"
-    val labelFile    = "test/precision_oriented.tsv"
+    val originJSON = "test/precision.json"
+    val labelFile = "test/precision_oriented.tsv"
     val outputCorpus = "test/precisionCorpus.tsv"
 
     makeOurFormat(originJSON, labelFile, outputCorpus)
@@ -78,12 +101,12 @@ class EvalSpec extends FlatSpec with Matchers with LazyLogging {
     FileLines(originJSON).foreach {
       line =>
         val parts = line.split("\",\"")
-        val id      = line.substring(2, 2 + "489241303667204098".length)
+        val id = line.substring(2, 2 + "489241303667204098".length)
         val content = line.substring(5 + "489241303667204098".length).dropRight(1)
         if (id.trim.isEmpty) {
           logger.error("missing id for " + line)
         }
-      //  else logger.debug("id '" +id+ "'")
+        //  else logger.debug("id '" +id+ "'")
         idToContent += (id -> content.trim)
     }
 
@@ -102,7 +125,7 @@ class EvalSpec extends FlatSpec with Matchers with LazyLogging {
     println("labels " + idToLabel.size + " id->content " + idToContent.size)
     var unique = Set[String]()
     unique ++= idToLabel.values
-    println("labels (" +unique.size+ ") : " +unique.mkString(","))
+    println("labels (" + unique.size + ") : " + unique.mkString(","))
 
     new File(outputCorpus).delete()
     val writer = new FileWriter(outputCorpus, true)
@@ -139,26 +162,51 @@ class EvalSpec extends FlatSpec with Matchers with LazyLogging {
   }
 
   ignore should "split" in {
-    val lidNativeDocs: String = "test/news4L-500each.tsv"
-    val dest = "dest"
-    makeOneFilePerLanguage(lidNativeDocs, dest)
+    makeOneFilePerLanguage("test/news4L-500each.tsv", "dest")
   }
 
+  // e.g for langid
   def makeOneFilePerLanguage(lidNativeDocs: String, dest: String) = {
     new File(dest).mkdir()
-    val LabelTextSpace =
-      """^\s*(\S+)\s+(.*)$""".r
+    val LabelTextSpace = """^\s*(\S+)\s+(.*)$""".r
 
-    val lines: FileLines[String] = FileLines(lidNativeDocs)
     var labelToFile = Map[String, FileWriter]()
-    lines.foreach {
+    FileLines(lidNativeDocs).foreach {
       case (LabelTextSpace(label, text)) => {
         val writer = labelToFile.getOrElse(label, new FileWriter(dest + File.separator + label + ".txt", true))
         labelToFile += (label -> writer)
         writer.write(text + "\n")
-
       };
     }
     labelToFile.values.foreach { f => f.close() }
+  }
+
+  ignore should "sentiment" in {
+    convertToOurFormat()
+  }
+
+  def convertToOurFormat(): Unit = {
+    val s: String = "rt-polaritydata"
+    val source = "test/" + s
+    val dir = new File(source)
+
+    val writer = new FileWriter("test/" + s + ".tsv", true)
+    var c = 0
+
+    dir.listFiles().foreach {
+      file =>
+        val path: String = file.getAbsolutePath
+        println("reading " + path)
+        FileLines(path, "ISO-8859-1").foreach {
+          val suffix = file.getName.takeRight(3)
+          line => writer.write(suffix)
+            writer.write("\t")
+            writer.write(line)
+            writer.write("\n")
+            c += 1
+        }
+    }
+    println("wrote " + c + " lines")
+    writer.close()
   }
 }

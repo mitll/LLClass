@@ -272,7 +272,14 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
           set(label) += text -> label;
       }
       datasetBreakdown(set)
-      val strat = stratifyDataset(set)
+
+      val enoughData = set.filter(_._2.length >= dropSmallerThan)
+      if (enoughData.size < set.size) {
+        val pruned = set.keySet.diff(enoughData.keySet)
+        logger.info("pruned labels " + pruned.map(_.name).mkString(",") + " since examples less than " + dropSmallerThan)
+      }
+      val strat = if (stratify) stratifyDataset(enoughData) else enoughData
+
       datasetBreakdown(strat)
       splitLabelledData(strat, split)
     }
@@ -303,7 +310,9 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     val d = index.length
     logger.info(s"There are $l vectors in training")
     logger.info(s"There are $d in the feature space")
+    val before = System.currentTimeMillis()
     val (model, v) = (vectors zip labels) =+>: train(index.length, trainer, average, iter)
+    val after = System.currentTimeMillis()
 
     // save
     val outfn =
@@ -314,7 +323,7 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
       }
       else modelfn
 
-    logger.info("Training complete.")
+    logger.info("Training complete in " + (after - before) / 1000 + " seconds")
 
     // this section of code needs to be serialized to avoid serialUID errors
     // when loading up models with different java versions
@@ -370,9 +379,9 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     val afterC = System.currentTimeMillis()
     logger.debug("scoreModel took " + (afterC - beforeC) + " millis to classify " + labels.length + " items")
 
-    logger.info("# of trials: " + labels.length)
-    for (c <- confmat) logger.info(c)
-    logger.info(s"accuracy = $score")
+    log("INFO", "# of trials: " + labels.length)
+    for (c <- confmat) log("INFO", c)
+    log("INFO", s"accuracy = $score")
     if (scorefn != "")
       withPrint(scorefn) { f =>
         for (((text, label), scores) <- input.toList zip scores)
@@ -416,7 +425,12 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     // classify
 
     if (classifier != null) {
-      if (testSet.existe) logger.info(s"Scoring test set $testSet")
+      if (testSet.existe) {
+        logger.info(s"Scoring test set $testSet")
+      }
+      else if (testSet.nonEmpty) {
+        logger.warn(s"Can't find test set $testSet")
+      }
       if (testSet.existe || testSplit != null) {
         if (parScore) {
           parScoreModel(classifier, testSplit)

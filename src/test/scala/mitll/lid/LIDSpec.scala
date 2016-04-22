@@ -59,7 +59,7 @@ class LIDSpec extends FlatSpec with Matchers {
   }
 
   it should "train a model and test on train - should be 100% accurate" in {
-    val args = "-train test/twitter-11-500each.tsv.gz -test test/twitter-11-500each.tsv.gz"
+    val args = "-train test/twitter-11-500each.tsv.gz -test test/twitter-11-500each.tsv.gz -iterations 10"
     val expected = 1.000f
     new LID().ep(args.split(" ")) shouldBe expected +- 0.001f
   }

@@ -22,6 +22,7 @@ import java.io.{FileInputStream, ObjectOutputStream}
 
 import mitll.lid.utilities._
 
+import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.util.Sorting._
 
@@ -148,7 +149,7 @@ abstract class LinearModel(var weights: Array[Array[Double]], val classes: Array
   }
 
   def save(f: ObjectOutputStream) {
-    f.writeObject(this);
+    f.writeObject(this)
   }
 
   def save(fn: String) {
@@ -158,10 +159,10 @@ abstract class LinearModel(var weights: Array[Array[Double]], val classes: Array
   def train(features: Iterable[(FV, Symbol)], average: Boolean, iterations: Int)(implicit log: Log)
 
   def regress(features: Iterable[(FV, Symbol)], average: Boolean, iterations: Int)(implicit log: Log) {
-    train(features, average, iterations);
+    train(features, average, iterations)
   }
 
-  val classIndex = HashMap(classes.zipWithIndex: _*)
+  val classIndex: mutable.HashMap[Symbol, Int] = HashMap(classes.zipWithIndex: _*)
 }
 
 object LinearModel {
@@ -189,19 +190,28 @@ class MIRA(w: Array[Array[Double]], c: Array[Symbol], val k: Int, val C: Double)
 
     for (i <- 0 until iterations) {
       var s = 0
+      val before = System.currentTimeMillis()
       log("INFO", "Starting training iteration: %d", int2Integer(i))
       //Wacc.zero;
       for ((fv, c) <- features) {
         val updw = (iterations * len - (len * i + (s + 1)) + 1).asInstanceOf[Double]
         val oracleScore = scoreTarget(c, fv)
-        val scores = sortScores(fv)
+        val scores      = sortScores(fv)
+
+        val offset = 0x1000000 * classIndex(c)
+        val slvec = fv.slvec(offset)
+
         // Setup b
         for (n <- 0 until km) {
           val targetP = classes(scores(n)._2) == c
           val loss = if (targetP) 0.0 else 1.0
           val dist = oracleScore - scores(n)._1
           b(n) = loss - dist
-          distvec(n) = SLFeatureVector.getDistVector(fv.slvec(0x1000000 * classIndex(c)), fv.slvec(0x1000000 * scores(n)._2))
+
+          val offset1 = 0x1000000 * scores(n)._2
+          val slvec1 = fv.slvec(offset1)
+
+          distvec(n) = SLFeatureVector.getDistVector(slvec, slvec1)
           // binary
           //distvec(n) = if (targetP) SLFeatureVector.getDistVector(fv.slvec, fv.slvec)
           //             else SLFeatureVector.getDistVector(FV.zero.slvec, fv.slvec);
@@ -240,6 +250,8 @@ class MIRA(w: Array[Array[Double]], c: Array[Symbol], val k: Int, val C: Double)
         s += 1
         //Wacc += weights;
       }
+      val after = System.currentTimeMillis()
+    //  log("INFO","#" +i+ " took " + (after-before) + " millis")
     }
     if (average) {
       log("INFO", "Online weights: " + weights(0).slice(0, 20).map { x => sprintf("%.4f", double2Double(x)) }.mkString(" "))
