@@ -594,7 +594,7 @@ object utilities {
       """^\s*(\S+)\s+(.*)$""".r
 
     val lines: FileLines[String] = FileLines(lidNativeDocs)
-    var labelToFile = Map[String, FileWriter]()
+    var labelToFile = Map[String, File]()
     lines.foreach {
       case (LabelTextSpace(label, text)) => {
         val writer = labelToFile.getOrElse(label, new FileWriter(dest + File.separator + label + ".txt", true))

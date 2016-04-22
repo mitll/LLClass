@@ -41,7 +41,7 @@ trait ClassifierFactory[I] {
   def getClassifier(dir : String) : Classifier[I]
 }
 trait TrainerTemplate extends InternalPipeSupport with LazyLogging {
-  var (parts, trainSet, all, split, modelfn, testSet, scorefn, abname, tokens, merger) = (1, "", "", 0.1f, "", "", "", "", "", "")
+  var (parts, trainSet, all, split, modelfn, testSet, scorefn, abname, tokens, merger, parScore) = (1, "", "", 0.1f, "", "", "", "", "", "", false)
   var (trainAlg, average, iter, kBest, slack, svmC, gamma) = ("mira", true, 20, 4, 0.01f, 1.0f, 0.02f)
   config += "General"   -> Params("log"           -> Arg(logfn _, logfn_= _,       "Log to this file instead of STDERR"),
                                   "parts"         -> Arg(parts _, parts_= _,       "For scoring, split data into these parts"),
@@ -52,6 +52,7 @@ trait TrainerTemplate extends InternalPipeSupport with LazyLogging {
                                   "model"         -> Arg(modelfn _, modelfn_= _,   "Model to either save/load"),
                                   "test"          -> Arg(testSet _, testSet_= _,   "Test set"),
                                   "score"         -> Arg(scorefn _, scorefn_= _,   "Output score file"),
+                                  "parScore"      -> Arg(parScore _, parScore_= _, "Do scoring in parallel"),
                                   "abname"        -> Arg(abname _, abname_= _,     "Ablation group name"),
                                   "tokens"        -> Arg(tokens _, tokens_= _,     "Tokens dump out directory"))
   config += "Training"  -> Params("train-method"  -> Arg(trainAlg _, trainAlg_= _, "Specifies a training algorithm. Must be either: mira, perceptron, or svm"),
@@ -81,7 +82,7 @@ trait TrainerTemplate extends InternalPipeSupport with LazyLogging {
   }
   def datasetBreakdown[T](set : Map[Symbol, ArrayBuffer[(T, Symbol)]]) {
     val skeys = set.keys.toList.sortWith(_.name > _.name)
-    log("DEBUG", "sorted keys = " + skeys)
+    log("DEBUG", "sorted keys (" +skeys.size +")= " + skeys)
     log("INFO", "Dataset breakdown")
     log.separator()
     var total = 0
@@ -90,13 +91,15 @@ trait TrainerTemplate extends InternalPipeSupport with LazyLogging {
     log("INFO", "%-20s | %10d", "Total", total)
   }
 
+  // Make sure we take no more than the minimum class count from each class
   def stratifyDataset[T](set : Map[Symbol, ArrayBuffer[(T, Symbol)]]) : Map[Symbol, ArrayBuffer[(T, Symbol)]] = {
-    var strat = Map[Symbol, ArrayBuffer[(T, Symbol)]]()
     val skeys = set.keys.toList.sortWith(_.name > _.name)
     val classes : Map[Symbol, Int] = Map[Symbol, Int]()
-    for (label <- skeys) { val vecs = set(label); classes(label) = vecs.length }    
+    for (label <- skeys) { val vecs = set(label); classes(label) = vecs.length }
     val llimit = classes.values.toList.sortWith(_ < _)(0)
-    for (label <- skeys) { val vecs = set(label).take(llimit); strat(label) = vecs }    
+
+    var strat = Map[Symbol, ArrayBuffer[(T, Symbol)]]()
+    for (label <- skeys) { val vecs = set(label).take(llimit); strat(label) = vecs }
     strat
   }
 }

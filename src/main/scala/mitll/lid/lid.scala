@@ -299,8 +299,10 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
 
     val vectors = prepped |>: countTokens2 _ * counts2fv(dict, unk = true) * norm(bkg = bkgmodel, cutoff = cutoff) toList
 
-    logger.info("There are %d vectors in training", vectors.length)
-    logger.info("There are %d dimensions in the feature space", index.length)
+    val l = vectors.length
+    val d = index.length
+    logger.info(s"There are $l vectors in training")
+    logger.info(s"There are $d in the feature space")
     val (model, v) = (vectors zip labels) =+>: train(index.length, trainer, average, iter)
 
     // save
@@ -368,7 +370,6 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     val afterC = System.currentTimeMillis()
     logger.debug("scoreModel took " + (afterC - beforeC) + " millis to classify " + labels.length + " items")
 
-
     logger.info("# of trials: " + labels.length)
     for (c <- confmat) logger.info(c)
     logger.info(s"accuracy = $score")
@@ -417,7 +418,13 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     if (classifier != null) {
       if (testSet.existe) logger.info(s"Scoring test set $testSet")
       if (testSet.existe || testSplit != null) {
-        scoreModel(classifier, testSplit)
+        println("par score " +parScore)
+        if (parScore) {
+          parScoreModel(classifier, testSplit)
+        }
+        else {
+          scoreModel(classifier, testSplit)
+        }
       }
       else 0
     }
@@ -430,7 +437,12 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     if (classifier != null) {
       if (testSet.existe) logger.info(s"Scoring test set $testSet")
       if (testSet.existe) {
-        scoreModel(classifier, null)
+        if (parScore) {
+          parScoreModel(classifier, null)
+        }
+        else {
+          scoreModel(classifier, null)
+        }
       }
       else 0
     }

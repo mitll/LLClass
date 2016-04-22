@@ -20,11 +20,8 @@
 package mitll.lid
 
 import java.io.File
-import java.net.URLEncoder
 
 import org.scalatest._
-
-import scala.io.Source
 
 // -all eval/no_nl_da_en_5k.tsv.gz -split 0.15 -iterations 10
 // LID -all eval/no_nl_da_en_500.tsv.gz -split 0.15 -iterations 10
