@@ -3,19 +3,19 @@
 * Java 1.8
 
 ### To Compile Source Code and Build
-Go to top-level directory (ie. ../mira4) and type:
+At top-level directory type:
 ```
 sbt assembly
 ```
 Running this command will cause SBT to download some dependencies, this may take some time depending on your internet connection. If you use a proxy, you may need to adjust your local proxy settings to allow SBT to fetch dependencies.
 
-This creates a jar in the folder called ../mira4/target
+This creates a jar in the folder called ../LLClass/target
 ```
-[info] Packaging ../mira4/target/scala-2.10/MITLL_LID-assembly-1.0.jar ...
+[info] Packaging ../LLClass/target/scala-2.10/MITLL_LID-assembly-1.0.jar ...
 ```
 For ease of use during tasks, you can rename the jar and put it in the top-level directory:
 ```
-mv ../mira4/target/scala-2.10/MITLL_LID-assembly-1.0.jar ../mira4/MITLL-LID.jar 
+mv ../LLClass/target/scala-2.10/MITLL_LID-assembly-1.0.jar ../LLClass/MITLL-LID.jar 
 ```
 
 ### Data Format Description
