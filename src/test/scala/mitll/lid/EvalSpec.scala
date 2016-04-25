@@ -41,7 +41,7 @@ class EvalSpec extends FlatSpec with Matchers with LazyLogging {
     overallAccuracy shouldBe expected +- 0.001f
   }
 
-  it should "train a model over recall corpus" in {
+  ignore should "train a model over recall corpus" in {
     val args = "-all test/recallCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500"
     val overallAccuracy = new LID().ep(args.split(" "))
     val expected = 0.923f
