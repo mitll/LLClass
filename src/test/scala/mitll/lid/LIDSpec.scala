@@ -65,9 +65,11 @@ class LIDSpec extends FlatSpec with Matchers {
   }
 
   it should "save out a model, log and score files" in {
-    val modelFile = "news4L.mod"
-    val logFile = "news4L.log"
-    val scoreFile = "news4L.score"
+    val testout: String = "testOut"
+    new File(testout).mkdir()
+    val modelFile = testout + File.separator +"news4L.mod"
+    val logFile  = testout + File.separator +"news4L.log"
+    val scoreFile = testout + File.separator +"news4L.score"
     val args = "-all test/news4L-500each.tsv.gz -split 0.15 -iterations 30 -model " + modelFile + " -log " + logFile + " -score " + scoreFile
     val accuracy = new LID().ep(args.split(" "))
 
