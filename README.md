@@ -11,11 +11,11 @@ Running this command will cause SBT to download some dependencies, this may take
 
 This creates a jar in the folder called ../LLClass/target
 ```
-[info] Packaging ../LLClass/target/scala-2.10/MITLL_LID-assembly-1.0.jar ...
+[info] Packaging ../LLClass/target/scala-2.10/LLClass-assembly-1.0.jar ...
 ```
 For ease of use during tasks, you can rename the jar and put it in the top-level directory:
 ```
-mv ../LLClass/target/scala-2.10/MITLL_LID-assembly-1.0.jar ../LLClass/MITLL-LID.jar 
+mv ../LLClass/target/scala-2.10/LLClass-assembly-1.0.jar ../LLClass/MITLL-LID.jar 
 ```
 
 ### Data Format Description
@@ -38,7 +38,7 @@ fr	quelle langue est-elle?
 
 ### Quickstart:
 ```
-java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz
+java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz
 ```
 
 ### Quickstart Expected Results:
@@ -66,28 +66,28 @@ java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz
 
 #### Use 85/15 train/test split and run for 10 iterations (optional - specify and save the resulting model, log and score files):
 ```
-java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 10
+java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 10
 ```
 
 
 #### Save score files, model files, and log files, use 85/15 train/test split:
 ```
-java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 30 -model news4L.mod -log news4L.log -score news4L.score
+java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 30 -model news4L.mod -log news4L.log -score news4L.score
 ```
 
 #### Apply an existing model to new test data (optional - specify and save the resulting log and score files):
 ```
-java -jar MITLL_LID.jar LID -test new.tsv.gz -model old.mod
+java -jar LLClass.jar LID -test new.tsv.gz -model old.mod
 ```
 
 #### Train and test on different data sets (optional - specify and save the resulting model, log, and score files):
 ```
-java -jar MITLL_LID.jar LID -train data1.tsv.gz -test data2.tsv.gz
+java -jar LLClass.jar LID -train data1.tsv.gz -test data2.tsv.gz
 ```
 
 ###To run with separate train/test sets specify model and score files:
 ``` 
-java -jar MITLL_LID.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
+java -jar LLClass.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
 ```
 
 #### The wrapper class can be instantiated inside of another Java/Scala program. There are two functions to score text. The function textLID() returns the language code and a confidence value for that code. The function textLIDFull() returns a set of language labels ranked by most likely to least likely and a confidence value for each one. 

@@ -29,7 +29,7 @@ import org.scalatest._
 // LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 30 -model news4L.mod -log news4L.log -score news4L.score
 // LID -test eval/news4L-500each.tsv -model news4L.mod
 class LIDSpec extends FlatSpec with Matchers {
-  // same as java -jar MITLL_LID.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 10
+  // same as java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 10
   it should "train a model on 4 newswire languages using 85/15 train/test split" in {
     val args = "-all test/news4L-500each.tsv.gz -split 0.15 -iterations 10"
     val overallAccuracy = new LID().ep(args.split(" "))
@@ -114,6 +114,6 @@ class LIDSpec extends FlatSpec with Matchers {
   }
 
   it should "show usage" in {
-    MITLL_LID.main(Array())
+    LLClass.main(Array())
   }
 }

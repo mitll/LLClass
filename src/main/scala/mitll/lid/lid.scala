@@ -31,7 +31,7 @@ import scala.collection.mutable.{ArrayBuffer, Map}
 import scala.collection.parallel.ParIterable
 import scala.io.Source
 
-object MITLL_LID extends LazyLogging {
+object LLClass extends LazyLogging {
   def main(args: Array[String]) {
     if (args.length < 2) {
       System.err.println("Usage : expecting args like : LID -all test/original4.tsv.gz")

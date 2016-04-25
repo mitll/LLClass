@@ -1,4 +1,4 @@
-name := "MITLL_LID"
+name := "LLClass"
 
 organization := "edu.mit.ll"
 
@@ -11,11 +11,7 @@ sbtVersion := "0.13.11"
 // get the assembly plugin, not using https
 resolvers += "scalasbt" at "http://repo.scala-sbt.org/scalasbt/sbt-plugin-releases"
 
-//resolvers += "Artima Maven Repository" at "http://repo.artima.com/releases"
-
-mainClass := Some("mitll.MITLL_LID")
-
-//scalaSource in Compile := baseDirectory.value / "src"
+mainClass := Some("mitll.LLClass")
 
 libraryDependencies += "org.apache.commons" % "commons-email" % "1.3.1"
 
@@ -32,7 +28,7 @@ libraryDependencies += "org.avaje.ebeanorm" % "avaje-ebeanorm-agent" % "3.1.1"
 
 libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
 
-mainClass in assembly := Some("mitll.MITLL_LID")
+mainClass in assembly := Some("mitll.LLClass")
 
 libraryDependencies ++= Seq(
 
