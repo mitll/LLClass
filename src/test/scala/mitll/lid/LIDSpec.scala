@@ -87,7 +87,7 @@ class LIDSpec extends FlatSpec with Matchers {
 
   it should "score against a model" in {
     val newsRunner = new mitll.lid.Scorer("models/news4L.mod")
-    val test: String = "what language is this text string?"
+    val test = "what language is this text string?"
     var (language, confidence) = newsRunner.textLID(test)
     val formatted = f"$confidence%1.2f"
     println(s"'$test' = $language with confidence $formatted")

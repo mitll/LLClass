@@ -25,7 +25,7 @@ import java.net.URLEncoder
 import com.typesafe.scalalogging._
 import mitll.lid.utilities._
 
-import scala.Iterable
+import scala.{Iterable, Seq}
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, Map}
 import scala.collection.parallel.ParIterable
@@ -86,6 +86,8 @@ class Scorer(val modeldir: String) extends LazyLogging {
   def textLIDTopN(text: String, n: Int): Array[(Symbol, Double)] = {
     textLIDFull(text).take(n)
   }
+
+  def textLIDTop2(text:String) = textLIDTopN(text,2)
 }
 
 class multiparam {
@@ -217,6 +219,8 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
 
         def classify(input: String): Array[(Double, Symbol)] = lm.csortScores(fExtractor(input))
 
+        def knownClasses = lm.classIndex.keySet.toSeq
+
         def regress(input: String) = throw Fatal("Regression not suppored for discrete class problems")
       }
     }
@@ -225,30 +229,30 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
   // Use langid as a scoring service
   // assumes we've downloaded and installed langid.py : https://github.com/saffsd/langid.py
   // and it's running as a webservice at http://172.25.180.54:9008
-  def getLangidClassifier = {
-    new Classifier[String] {
-      val fExtractor = null
+  def getLangidClassifier = new Classifier[String] {
+    val fExtractor = null
 
-      def regress(input: String) = throw Fatal("Regression not suppored for discrete class problems")
+    def regress(input: String) = throw Fatal("Regression not suppored for discrete class problems")
 
-      // I should probably use a json library...
-      override def classify(input: String): Array[(Double, Symbol)] = {
-        val enc = URLEncoder.encode(input)
-        val url: String = "http://172.25.180.54:9008/detect?q=\"" + enc + "\""
+    // I should probably use a json library...
+    override def classify(input: String): Array[(Double, Symbol)] = {
+      val enc = URLEncoder.encode(input)
+      val url: String = "http://172.25.180.54:9008/detect?q=\"" + enc + "\""
 
-        val html = Source.fromURL(url)
-        val s = html.mkString
-        val split: Array[String] = s.split("language\": \"")
-        val split2: Array[String] = s.split("confidence\": ")
+      val html = Source.fromURL(url)
+      val s = html.mkString
+      val split: Array[String] = s.split("language\": \"")
+      val split2: Array[String] = s.split("confidence\": ")
 
-        val tail: String = split(1)
-        var resp = tail.split("\"").head
-        if (resp.endsWith(".txt")) resp = resp.dropRight(4)
-        val conf = split2(1).split("\"").head.split(",").head
-        val dv = conf.toDouble
-        Array(dv -> Symbol(resp))
-      }
+      val tail: String = split(1)
+      var resp = tail.split("\"").head
+      if (resp.endsWith(".txt")) resp = resp.dropRight(4)
+      val conf = split2(1).split("\"").head.split(",").head
+      val dv = conf.toDouble
+      Array(dv -> Symbol(resp))
     }
+
+    override def knownClasses: Seq[Symbol] = Seq()
   }
 
   // -------------------------------------------------------------------------------------------------------------------------------------

@@ -36,6 +36,8 @@ trait Classifier[I] {
 
   def classify(input: I): Array[(Double, Symbol)]
 
+  def knownClasses : Seq[Symbol]
+
   def regress(input: I): Double
 }
 
