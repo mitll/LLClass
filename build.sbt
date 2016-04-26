@@ -40,6 +40,8 @@ libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.4.0"
 
 libraryDependencies +=  "com.lihaoyi" %% "sourcecode" % "0.1.1" // Scala-JVM
 
+libraryDependencies +=  "org.scalaj" %% "scalaj-http" % "2.3.0"
+
 lazy val http4sVersion = "0.13.2"
 
 val circeVersion = "0.4.1"

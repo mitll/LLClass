@@ -9,13 +9,13 @@ sbt assembly
 ```
 Running this command will cause SBT to download some dependencies, this may take some time depending on your internet connection. If you use a proxy, you may need to adjust your local proxy settings to allow SBT to fetch dependencies.
 
-This creates a jar in the folder called ../LLClass/target
+This creates a jar under target at 
 ```
 [info] Packaging ../LLClass/target/scala-2.10/LLClass-assembly-1.0.jar ...
 ```
 For ease of use during tasks, you can rename the jar and put it in the top-level directory:
 ```
-mv ../LLClass/target/scala-2.10/LLClass-assembly-1.0.jar ../LLClass/MITLL-LID.jar 
+mv target/scala-2.11/LLClass-assembly-1.0.jar ./LLClass.jar 
 ```
 
 ### Data Format Description

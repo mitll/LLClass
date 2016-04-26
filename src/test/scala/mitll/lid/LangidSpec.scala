@@ -32,13 +32,24 @@ class LangidSpec extends FlatSpec with Matchers {
     overallAccuracy shouldBe expected +- 0.001f
   }
 
-  ignore should "test 4 against langid.py" in {
+  it should "test 4 against langid.py" in {
+    //  val args = "test/twitter-11-500each.tsv.gz"
+    val lidNativeDocs = "test/news4L-500each.tsv"
+    val overallAccuracy = new LID().testLangid(lidNativeDocs)
+    val expected = 0.9365f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
+/*
+  it should "test 4 against langid.py" in {
     //  val args = "test/twitter-11-500each.tsv.gz"
     val lidNativeDocs: String = "test/news4L-500each.tsv"
     val overallAccuracy = new LID().testLangid(lidNativeDocs)
     val expected = 0.9365f
     overallAccuracy shouldBe expected +- 0.001f
   }
+*/
+
 
   ignore should "split" in {
     val lidNativeDocs: String = "test/news4L-500each.tsv"

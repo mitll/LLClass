@@ -20,16 +20,53 @@
 package mitll.lid
 
 
+import java.net.URLEncoder
+
 import com.typesafe.scalalogging.LazyLogging
 import org.scalatest._
+
+import scala.io.Source
 
 class RESTServiceSpec extends FlatSpec with Matchers with LazyLogging {
   it should "start a service" in {
     val service = new RESTService
-    try {
-      Thread.sleep(60000)
-    } catch {
-      case e:Any => println("got error " + e)
-    }
+    val label = classify("This")
+    service.stopServer
   }
+
+  it should "test 4 against REST service" in {
+    val service = new RESTService()
+
+    val lidNativeDocs = "test/news4L-500each.tsv"
+    val overallAccuracy = new LID().testREST(lidNativeDocs)
+    val expected = 0.9365f
+    overallAccuracy shouldBe expected +- 0.001f
+
+    service.stopServer
+  }
+
+  def classify(input: String): String = {
+    val enc = URLEncoder.encode(input)
+    val url = "http://localhost:8080/classify?q=" + enc + ""
+    val result = Source.fromURL(url)
+    result.mkString
+  }
+
+  def classifyJSON(input: String): Array[(Double, Symbol)] = {
+    val enc = URLEncoder.encode(input)
+    val url = "http://localhost:8080/classifyJSON?q=" + enc + ""
+
+    val html = Source.fromURL(url)
+    val s = html.mkString
+    val split = s.split("class\": \"")
+    val split2 = s.split("confidence\": ")
+
+    val tail = split(1)
+    var resp = tail.split("\"").head
+    if (resp.endsWith(".txt")) resp = resp.dropRight(4)
+    val conf = split2(1).split("\"").head.split(",").head
+    val dv = conf.toDouble
+    Array(dv -> Symbol(resp))
+  }
+
 }

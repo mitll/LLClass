@@ -25,11 +25,12 @@ import java.net.URLEncoder
 import com.typesafe.scalalogging._
 import mitll.lid.utilities._
 
-import scala.{Iterable, Seq}
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, Map}
 import scala.collection.parallel.ParIterable
-import scala.io.Source
+import scala.io.{BufferedSource, Source}
+import scala.{Iterable, Seq}
+import scalaj.http._
 
 object LLClass extends LazyLogging {
   def main(args: Array[String]) {
@@ -87,7 +88,7 @@ class Scorer(val modeldir: String) extends LazyLogging {
     textLIDFull(text).take(n)
   }
 
-  def textLIDTop2(text:String) = textLIDTopN(text,2)
+  def textLIDTop2(text: String) = textLIDTopN(text, 2)
 }
 
 class multiparam {
@@ -221,7 +222,7 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
 
         def knownClasses = lm.classIndex.keySet.toSeq
 
-        def regress(input: String) = throw Fatal("Regression not suppored for discrete class problems")
+        def regress(input: String) = throw Fatal("Regression not supported for discrete class problems")
       }
     }
   }
@@ -232,7 +233,7 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
   def getLangidClassifier = new Classifier[String] {
     val fExtractor = null
 
-    def regress(input: String) = throw Fatal("Regression not suppored for discrete class problems")
+    def regress(input: String) = throw Fatal("Regression not supported for discrete class problems")
 
     // I should probably use a json library...
     override def classify(input: String): Array[(Double, Symbol)] = {
@@ -241,15 +242,55 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
 
       val html = Source.fromURL(url)
       val s = html.mkString
-      val split: Array[String] = s.split("language\": \"")
-      val split2: Array[String] = s.split("confidence\": ")
+      val split = s.split("language\": \"")
+      val split2 = s.split("confidence\": ")
 
-      val tail: String = split(1)
+      val tail = split(1)
       var resp = tail.split("\"").head
       if (resp.endsWith(".txt")) resp = resp.dropRight(4)
       val conf = split2(1).split("\"").head.split(",").head
       val dv = conf.toDouble
       Array(dv -> Symbol(resp))
+    }
+
+    override def knownClasses: Seq[Symbol] = Seq()
+  }
+
+  def getTestRESTClassifier = new Classifier[String] {
+    val fExtractor = null
+
+    def regress(input: String) = throw Fatal("Regression not supported")
+
+    // I should probably use a json library...
+    override def classify(input: String): Array[(Double, Symbol)] = {
+
+//      val result = Http("http://localhost:8080/classifyJSON").postData(input)
+//        .header("Content-Type", "application/json")
+//        .header("Charset", "UTF-8")
+//        .option(HttpOptions.readTimeout(10000)).asString
+
+      var enc = URLEncoder.encode(input)
+      if (enc.length > 2000) {
+        logger.warn("truncated " + input)
+        enc = enc.substring(0, 2000)
+      }
+     val url = "http://localhost:8080/classifyJSON?q=" + enc
+
+      try {
+        val html: BufferedSource = Source.fromURL(url)
+        val s = html.mkString
+        val tail = s.split("class")(1)
+        var resp = tail.split("\" : \"").tail.head.split("\"").head
+        if (resp.endsWith(".txt")) resp = resp.dropRight(4)
+        val split3 = s.split("confidence")(1)
+        val conf = split3.split("\" : \"").tail.head.split("\"").head
+        val dv = conf.toDouble
+        Array(dv -> Symbol(resp))
+      } catch {
+        case e:Exception =>
+          logger.error("Got " + e.getMessage + " for " + input.length + " : " + input)
+          Array(-1d -> Symbol("too long"))
+      }
     }
 
     override def knownClasses: Seq[Symbol] = Seq()
@@ -452,7 +493,6 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     val classifier = getLangidClassifier
     testSet = testfile
     if (classifier != null) {
-      if (testSet.existe) logger.info(s"Scoring test set $testSet")
       if (testSet.existe) {
         if (parScore) {
           parScoreModel(classifier, null)
@@ -460,6 +500,18 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
         else {
           scoreModel(classifier, null)
         }
+      }
+      else 0
+    }
+    else 0
+  }
+
+  def testREST(testfile: String): Float = {
+    val classifier = getTestRESTClassifier
+    testSet = testfile
+    if (classifier != null) {
+      if (testSet.existe) {
+        scoreModel(classifier, null)
       }
       else 0
     }
