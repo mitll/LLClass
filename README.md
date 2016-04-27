@@ -64,28 +64,28 @@ java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz
 * Output Files - Scored files, model files, and log files are only saved when the user specifies them on command line at runtime
 
 
-#### Use 85/15 train/test split and run for 10 iterations (optional - specify and save the resulting model, log and score files):
+#### Use 85/15 train/test split and run for 10 iterations:
 ```
 java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 10
 ```
 
 
-#### Save score files, model files, and log files, use 85/15 train/test split:
+#### Save score files, model files, and log files, use 85/15 train/test split (optional - specify and save the resulting model, log and score files):
 ```
 java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 30 -model news4L.mod -log news4L.log -score news4L.score
 ```
 
-#### Apply an existing model to new test data (optional - specify and save the resulting log and score files):
+#### Apply an existing model to new test data 
 ```
-java -jar LLClass.jar LID -test new.tsv.gz -model old.mod
+java -jar LLClass.jar LID -test new.tsv.gz -model models/news4L.mod
 ```
 
-#### Train and test on different data sets (optional - specify and save the resulting model, log, and score files):
+#### Train and test on different data sets
 ```
 java -jar LLClass.jar LID -train data1.tsv.gz -test data2.tsv.gz
 ```
 
-###To run with separate train/test sets specify model and score files:
+###To run with separate train/test sets specify model and score files (optional - specify and save the resulting model, log, and score files):
 ``` 
 java -jar LLClass.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
 ```
