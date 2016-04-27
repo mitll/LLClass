@@ -9,13 +9,13 @@ sbt assembly
 ```
 Running this command will cause SBT to download some dependencies, this may take some time depending on your internet connection. If you use a proxy, you may need to adjust your local proxy settings to allow SBT to fetch dependencies.
 
-This creates a jar in the folder called ../LLClass/target
+This creates a jar under target :
 ```
-[info] Packaging ../LLClass/target/scala-2.10/LLClass-assembly-1.0.jar ...
+[info] Packaging ... target/scala-2.11/LLClass-assembly-1.0.jar
 ```
 For ease of use during tasks, you can rename the jar and put it in the top-level directory:
 ```
-mv ../LLClass/target/scala-2.10/LLClass-assembly-1.0.jar ../LLClass/MITLL-LID.jar 
+mv target/scala-2.10/LLClass-assembly-1.0.jar ./LLClass.jar 
 ```
 
 ### Data Format Description
@@ -52,7 +52,7 @@ java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz
 2015-10-05 15:56:27.325 [INFO]             fa          0         46          0          4         50   0.920000
 2015-10-05 15:56:27.326 [INFO]             es          0          0         50          0         50   1.000000
 2015-10-05 15:56:27.326 [INFO]            dar          0          0          0         50         50   1.000000
-2015-10-05 15:56:27.326 [INFO]     accuracy = 0.980000
+2015-10-05 15:56:27.326 [INFO]     accuracy = 0.985
 ```
 
 ### MITLL-LID Options
@@ -105,6 +105,9 @@ var (language, confidence) = newsRunner.textLID("what language is this text stri
 ```
 var langConfArray : Array[(String,Double)] = newsRunner.textLIDFull("what language is this text string?")
 ```
+
+### Tests
+* See LIDSpec for more usage examples.
 
 ###sbt behind a firewall
 * You may need to add a repositories file like this under your ~/.sbt directory:
