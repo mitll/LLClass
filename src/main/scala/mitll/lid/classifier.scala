@@ -51,7 +51,7 @@ trait TrainerTemplate extends InternalPipeSupport with LazyLogging {
   config += "General"   -> Params("log"           -> Arg(logfn _, logfn_= _,       "Log to this file instead of STDERR"),
                                   "parts"         -> Arg(parts _, parts_= _,       "For scoring, split data into these parts"),
                                   "train"         -> Arg(trainSet _, trainSet_= _, "Training set"),
-                                  "all"           -> Arg(all _, all_= _,           "A directory containing train and test documents (*.txt/*.tsv) "),
+                                  "all"           -> Arg(all _, all_= _,           "A directory or file containing train and test documents (*.txt/*.tsv) "),
                                   "merger"        -> Arg(merger _, merger_= _,     "A directory with documents in two languages, to be merged before train/test."),
                                   "split"         -> Arg(split _, split_= _,       "proportion (0.0 - 1.0) of 'all' to use as test vectors (per class)"),
                                   "model"         -> Arg(modelfn _, modelfn_= _,   "Model to either save/load"),
@@ -91,7 +91,7 @@ trait TrainerTemplate extends InternalPipeSupport with LazyLogging {
 
   def datasetBreakdown[T](set: Map[Symbol, ArrayBuffer[(T, Symbol)]]) {
     val skeys = set.keys.toList.sortWith(_.name > _.name)
-    log("DEBUG", "sorted keys (" + skeys.size + ")= " + skeys)
+    log("DEBUG", "Labels in dataset (" + skeys.size + ") = " + skeys)
     log("INFO", "Dataset breakdown")
     log.separator()
     var total = 0

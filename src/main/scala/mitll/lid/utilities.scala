@@ -87,7 +87,10 @@ object utilities {
   }
 
   def withObjectInput[T](fn: String)(block: (ObjectInputStream) => T) = {
-    val f = new ObjectInputStream(new FileInputStream(fn))
+    val f = new ObjectInputStream(
+      if (fn matches """^.*\.gz$""") new GZIPInputStream(new FileInputStream(fn))
+      else if (fn matches """^.*\.zip$""") new ZipInputStream(new FileInputStream(fn))
+      else new FileInputStream(fn))
     try {
       block(f)
     } finally {
@@ -257,15 +260,20 @@ object utilities {
   def counts2fv(dictionary: Map[Symbol, Int], unk: Boolean) = (counts: Seq[(Symbol, Int)]) => FV(counts, dictionary, unk)
 
   def norm(bkg: FV, cutoff: Double) = (vector: FV) => {
-    vector.norm(vector.total); vector.tfllr(bkg, cutoff); vector
+    vector.norm(vector.total);
+    vector.tfllr(bkg, cutoff);
+    vector
   }
 
   def lognorm(bkg: FV, cutoff: Double) = (vector: FV) => {
-    vector.norm(vector.total); vector.tflog(bkg, cutoff); vector
+    vector.norm(vector.total);
+    vector.tflog(bkg, cutoff);
+    vector
   }
 
   def znorm(mean: FV, std: FV) = (vector: FV) => {
-    vector.znorm(mean, std); vector
+    vector.znorm(mean, std);
+    vector
   }
 
   def splitfv[T](parts: Int = 1) = (fvs: Iterable[T]) => {
@@ -287,7 +295,7 @@ object utilities {
       else model.train(input, average, iterations)
       val after = System.currentTimeMillis()
 
-      log("INFO", "Completed training in " +(after-before)/1000 + " seconds")
+      log("INFO", "Completed training in " + (after - before) / 1000 + " seconds")
 
       model -> input;
   }

@@ -22,22 +22,20 @@ class RESTService extends LazyLogging {
       val formatted = f"$confidence%1.2f"
       Ok(s"$language")
 
-    case GET -> Root / "classifyJSON" / query =>
+    case GET -> Root / "classify" / "json" / query =>
       val (language, confidence) = scorer.textLID(query)
       val formatted = f"$confidence%1.2f"
       val json: Json = Json.obj("class" -> Json.fromString(language),
         "confidence" -> Json.fromString(formatted))
-
       Ok(json.toString())
 
-    case GET -> Root / "classifyJSONAll" / query =>
+    case GET -> Root / "classify" / "json" / "all" / query =>
       val full: Array[(Symbol, Double)] = scorer.textLIDFull(query)
       val map: Array[Json] = full.map {
         p => Json.obj("class" -> Json.fromString(p._1.name),
           "confidence" -> Json.fromDouble(p._2).getOrElse(Json.fromString("")))
       }
       val jsonOuter = Json.obj("results" -> Json.fromValues(map))
-
       Ok(jsonOuter.toString())
   }
 
@@ -50,9 +48,7 @@ class RESTService extends LazyLogging {
 
 object RESTService extends LazyLogging {
   def main(args: Array[String]) {
-
     new RESTService().getServer
-
-    Thread.sleep(6000000)
+    Thread.sleep(Int.MaxValue)
   }
 }

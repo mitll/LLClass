@@ -33,8 +33,8 @@ import scala.io.Source
 
 object LLClass extends LazyLogging {
   def main(args: Array[String]) {
-    if (args.length < 2) {
-      System.err.println("Usage : expecting args like : LID -all test/original4.tsv.gz")
+    if (args.length < 1) {
+      logger.error("Usage : expecting args like : LID -all test/original4.tsv.gz")
     }
     else {
       var run = args(0)
@@ -45,7 +45,8 @@ object LLClass extends LazyLogging {
         new LID().main(args.slice(1, args.length))
       }
       else {
-        logger.error("Usage : expecting first arg to be either multiparam or LID but got " + run)
+        //logger.error("Usage : expecting first arg to be either multiparam or LID but got " + run)
+        new LID().main(args)
       }
     }
   }
@@ -88,6 +89,8 @@ class Scorer(val modeldir: String) extends LazyLogging {
   }
 
   def textLIDTop2(text:String) = textLIDTopN(text,2)
+
+  def getLabels: Seq[String] = lidModel.knownClasses.map(_.name).sorted
 }
 
 class multiparam {
