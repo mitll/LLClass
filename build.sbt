@@ -8,12 +8,14 @@ scalaVersion := "2.11.8"
 
 sbtVersion := "0.13.11"
 
+test in assembly := {}
+
 // get the assembly plugin, not using https
 resolvers += "scalasbt" at "http://repo.scala-sbt.org/scalasbt/sbt-plugin-releases"
 
 //resolvers += Resolver.sonatypeRepo("snapshots")
 
-mainClass := Some("mitll.LLClass")
+mainClass := Some("mitll.lid.LLClass")
 
 libraryDependencies += "org.apache.commons" % "commons-email" % "1.3.1"
 
@@ -58,6 +60,6 @@ libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-blaze-client" % http4sVersion
 )
 
-mainClass in assembly := Some("mitll.LLClass")
+mainClass in assembly := Some("mitll.lid.LLClass")
 
 

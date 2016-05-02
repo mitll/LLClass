@@ -1,3 +1,18 @@
+### Intro
+LLClass can be used for a number of text classification problems including:
+
+* Language Identification (LID)
+* Automatic text difficulty assessment (Auto ILR)
+* Sentiment analysis
+
+It includes a number of different classifiers including MIRA, SVM, and a perceptron.
+
+It also includes a simple REST service for doing classification and some pre trained models.
+
+More documentation can be found under docs : [Auto ILR Paper](docs/Shen_Williams_Marius_Salesky_ACL2013.pdf)
+
+* For performance benchmarks, see below.
+
 ###Build Dependencies
 * scala 2.11.8
 * Java 1.8
@@ -11,7 +26,7 @@ Running this command will cause SBT to download some dependencies, this may take
 
 This creates a jar under target at 
 ```
-[info] Packaging ../LLClass/target/scala-2.10/LLClass-assembly-1.0.jar ...
+[info] Packaging ... target/scala-2.11/LLClass-assembly-1.0.jar
 ```
 For ease of use during tasks, you can rename the jar and put it in the top-level directory:
 ```
@@ -52,7 +67,7 @@ java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz
 2015-10-05 15:56:27.325 [INFO]             fa          0         46          0          4         50   0.920000
 2015-10-05 15:56:27.326 [INFO]             es          0          0         50          0         50   1.000000
 2015-10-05 15:56:27.326 [INFO]            dar          0          0          0         50         50   1.000000
-2015-10-05 15:56:27.326 [INFO]     accuracy = 0.980000
+2015-10-05 15:56:27.326 [INFO]     accuracy = 0.985
 ```
 
 ### MITLL-LID Options
@@ -64,28 +79,28 @@ java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz
 * Output Files - Scored files, model files, and log files are only saved when the user specifies them on command line at runtime
 
 
-#### Use 85/15 train/test split and run for 10 iterations (optional - specify and save the resulting model, log and score files):
+#### Use 85/15 train/test split and run for 10 iterations:
 ```
 java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 10
 ```
 
 
-#### Save score files, model files, and log files, use 85/15 train/test split:
+#### Save score files, model files, and log files, use 85/15 train/test split (optional - specify and save the resulting model, log and score files):
 ```
 java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 30 -model news4L.mod -log news4L.log -score news4L.score
 ```
 
-#### Apply an existing model to new test data (optional - specify and save the resulting log and score files):
+#### Apply an existing model to new test data 
 ```
-java -jar LLClass.jar LID -test new.tsv.gz -model old.mod
+java -jar LLClass.jar LID -test new.tsv.gz -model models/news4L.mod
 ```
 
-#### Train and test on different data sets (optional - specify and save the resulting model, log, and score files):
+#### Train and test on different data sets
 ```
 java -jar LLClass.jar LID -train data1.tsv.gz -test data2.tsv.gz
 ```
 
-###To run with separate train/test sets specify model and score files:
+###To run with separate train/test sets specify model and score files (optional - specify and save the resulting model, log, and score files):
 ``` 
 java -jar LLClass.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
 ```
@@ -105,6 +120,85 @@ var (language, confidence) = newsRunner.textLID("what language is this text stri
 ```
 var langConfArray : Array[(String,Double)] = newsRunner.textLIDFull("what language is this text string?")
 ```
+
+### REST service
+
+* Start the service
+
+```
+java -jar LLClass.jar REST
+```
+
+* Simple text call in a browser
+
+```
+http://localhost:8080/classify?q=No%20quiero%20pagar%20la%20cuenta%20del%20hospital.
+es
+```
+
+Or
+
+```
+curl --noproxy localhost http://localhost:8080/classify?q=Necesito%20pagar%20los%20servicios%20de%20electricidad%20y%20cable.
+es
+```
+
+* JSON returned
+
+```
+http://localhost:8080/classify/json?q=%22Necesito%20pagar%20los%20servicios%20de%20electricidad%20y%20cable.%22
+
+{
+class: "es",
+confidence: "47.82"
+}
+```
+
+* Model labels
+```
+http://localhost:8080/labels
+
+{
+labels: [
+"dar",
+"es",
+"fa",
+"ru"
+]
+}
+```
+
+* JSON for all labels
+
+```
+http://localhost:8080/classify/all/json?q=%22Necesito%20pagar%20los%20servicios%20de%20electricidad%20y%20cable.%22
+
+results: [
+{
+class: "es",
+confidence: 0.7623826612993418
+},
+{
+class: "dar",
+confidence: -0.128890820239746
+},
+{
+class: "ru",
+confidence: -0.2614167250657798
+},
+{
+class: "fa",
+confidence: -0.37207511599381426
+}
+]
+}
+```
+
+* See RESTServiceSpec for details
+
+
+### Tests
+* See LIDSpec for more usage examples.
 
 ###sbt behind a firewall
 * You may need to add a repositories file like this under your ~/.sbt directory:

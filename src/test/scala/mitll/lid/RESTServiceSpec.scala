@@ -28,9 +28,34 @@ import org.scalatest._
 import scala.io.Source
 
 class RESTServiceSpec extends FlatSpec with Matchers with LazyLogging {
+
+  it should "start a service from the jar" in {
+    val args = "REST -model models/tweetRecall.mod"
+    LLClass.main(args.split(" "))
+  }
+
   it should "start a service" in {
     val service = new RESTService
-    val label = classify("This")
+    val label = classify("De acuerdo al decano tenemos 59 minutos")
+    logger.info("got " + label)
+    label shouldBe "es"
+    service.stopServer
+  }
+
+  it should "start a service on a different port" in {
+    val service = new RESTService(port=8090)
+    val label = classify("De acuerdo al decano tenemos 59 minutos")
+    logger.info("got " + label)
+    label shouldBe "es"
+    service.stopServer
+  }
+
+  ignore should "start a different service" in {
+    val service = new RESTService("models/tweetRecall.mod.gz")
+    val label = classify("This is a test.")
+    label shouldBe "en"
+    logger.info("got " + label)
+
     service.stopServer
   }
 
@@ -39,7 +64,7 @@ class RESTServiceSpec extends FlatSpec with Matchers with LazyLogging {
 
     val lidNativeDocs = "test/news4L-500each.tsv"
     val overallAccuracy = new LID().testREST(lidNativeDocs)
-    val expected = 0.9365f
+    val expected = 0.9965f
     overallAccuracy shouldBe expected +- 0.001f
 
     service.stopServer

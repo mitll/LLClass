@@ -30,26 +30,48 @@ import scala.collection.mutable.{ArrayBuffer, Map}
 import scala.collection.parallel.ParIterable
 import scala.io.{BufferedSource, Source}
 import scala.{Iterable, Seq}
-import scalaj.http._
 
 object LLClass extends LazyLogging {
+  var service : RESTService = null
+
+  sys addShutdownHook {
+    if (service != null) service.stopServer()
+  }
+
   def main(args: Array[String]) {
-    if (args.length < 2) {
-      System.err.println("Usage : expecting args like : LID -all test/original4.tsv.gz")
+    if (args.length < 1) {
+      logger.error("Usage : expecting args like : LID -all test/original4.tsv.gz")
     }
     else {
       var run = args(0)
-      if (run == "multiparam") {
+      if (run == "REST") {
+        val miniArg = new MiniArg()
+        miniArg.parseArgs(args)
+
+        logger.info("Got " + miniArg)
+        service = new RESTService(miniArg.modelFile, miniArg.port)
+        Thread.sleep(Long.MaxValue)
+      }
+      else if (run == "multiparam") {
         new multiparam().main(args.slice(1, args.length))
       }
       else if (run == "LID") {
         new LID().main(args.slice(1, args.length))
       }
       else {
-        logger.error("Usage : expecting first arg to be either multiparam or LID but got " + run)
+        //logger.error("Usage : expecting first arg to be either multiparam or LID but got " + run)
+        new LID().main(args)
       }
     }
   }
+}
+
+class MiniArg(var modelFile: String = "models/news4L.mod", var port: Int = 8080) extends ArgHandler {
+  val program = "RESTService -model modelFile -port port"
+
+  config += "General" ->
+    Params("modelFile" -> Arg(modelFile _, modelFile_= _, "model file"),
+      "port" -> Arg(port _, port_= _, "port"))
 }
 
 class Scorer(val modeldir: String) extends LazyLogging {
@@ -89,6 +111,8 @@ class Scorer(val modeldir: String) extends LazyLogging {
   }
 
   def textLIDTop2(text: String) = textLIDTopN(text, 2)
+
+  def getLabels: Seq[String] = lidModel.knownClasses.map(_.name).sorted
 }
 
 class multiparam {
@@ -262,19 +286,24 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     def regress(input: String) = throw Fatal("Regression not supported")
 
     // I should probably use a json library...
+    // for now, just truncate text that is longer than will fit in a GET
     override def classify(input: String): Array[(Double, Symbol)] = {
+      //      val result = Http("http://localhost:8080/classifyJSON").postData(input)
+      //        .header("Content-Type", "application/json")
+      //        .header("Charset", "UTF-8")
+      //        .option(HttpOptions.readTimeout(10000)).asString
 
-//      val result = Http("http://localhost:8080/classifyJSON").postData(input)
-//        .header("Content-Type", "application/json")
-//        .header("Charset", "UTF-8")
-//        .option(HttpOptions.readTimeout(10000)).asString
+      var toEncode = input
+      var enc = URLEncoder.encode(toEncode)
+      val prefix = "http://localhost:8080/classify/json?q="
 
-      var enc = URLEncoder.encode(input)
-      if (enc.length > 2000) {
-        logger.warn("truncated " + input)
-        enc = enc.substring(0, 2000)
+      while (enc.length > 4096 - prefix.length) {
+        toEncode = toEncode.substring(0, toEncode.length - 100)
+        enc = URLEncoder.encode(toEncode)
+        // logger.info("got " + enc.length)
       }
-     val url = "http://localhost:8080/classifyJSON?q=" + enc
+
+      val url = prefix + enc
 
       try {
         val html: BufferedSource = Source.fromURL(url)
@@ -287,7 +316,7 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
         val dv = conf.toDouble
         Array(dv -> Symbol(resp))
       } catch {
-        case e:Exception =>
+        case e: Exception =>
           logger.error("Got " + e.getMessage + " for " + input.length + " : " + input)
           Array(-1d -> Symbol("too long"))
       }
