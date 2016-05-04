@@ -88,10 +88,7 @@ object RESTService extends LazyLogging {
       println("Using model " + args(0))
       model = args(0)
     }
-    logger.info("calling RESTService ----------- ")
-
     new RESTService(model, "localhost", 8080)
-
-    Thread.sleep(Long.MaxValue)
+//    Thread.sleep(Long.MaxValue)
   }
 }

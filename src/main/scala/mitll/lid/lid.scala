@@ -40,17 +40,17 @@ object LLClass extends LazyLogging {
 
   def main(args: Array[String]) {
     if (args.length < 1) {
-      logger.error("Usage : expecting args like : LID -all test/news4L-500each.tsv.gz or REST")
+      println("Usage : expecting args like : LID -all test/news4L-500each.tsv.gz or REST -model models/news4L.mod")
+      println()
+      new LID().usage(System.out)
+      println()
+      new MiniArg().usage(System.out)
     }
     else {
       var run = args(0)
       if (run == "REST") {
         val miniArg = new MiniArg()
-        args.foreach(println(_))
-
         miniArg.parseArgs(args.slice(1, args.length))
-
-        logger.info("REST args " + miniArg.modelFile + " " + miniArg.port)
         service = new RESTService(miniArg.modelFile, miniArg.hostname, miniArg.port)
         Thread.sleep(Long.MaxValue)
       }
@@ -69,9 +69,9 @@ object LLClass extends LazyLogging {
 }
 
 class MiniArg(var modelFile: String = "models/news4L.mod", var hostname:String ="localhost",var port: Int = 8080) extends ArgHandler {
-  val program = "RESTService -model modelFile -port port"
+  val program = "REST"
 
-  config += "General" ->
+  config += "REST" ->
     Params("model" -> Arg(modelFile _, modelFile_= _, "model file"),
       "hostname" -> Arg(hostname _, hostname_= _, "hostname for http server"),
       "port" -> Arg(port _, port_= _, "port"))
@@ -338,7 +338,7 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
   // -------------------------------------------------------------------------------------------------------------------------------------
   // Standalone runner, config and helpers
   // -------------------------------------------------------------------------------------------------------------------------------------
-  val program = "lid-test"
+  val program = "LID"
   var (wOrder, cOrder, minCount, prune, cutoff) = (1, 3, 2, 0.0f, 1e10f)
 
   config += "Front End" -> Params("bkg-min-count" -> Arg(minCount _, minCount_= _, "Minimum count for background models"),
