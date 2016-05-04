@@ -129,27 +129,29 @@ var langConfArray : Array[(String,Double)] = newsRunner.textLIDFull("what langua
 java -jar LLClass.jar REST
 ```
 
-* Simple text call in a browser
+* Simple text call in a browser (http://localhost:8080/classify?q=...)
 
 ```
 http://localhost:8080/classify?q=No%20quiero%20pagar%20la%20cuenta%20del%20hospital.
+```
+```
 es
 ```
 
-Or
+* Curl
 
 ```
 curl --noproxy localhost http://localhost:8080/classify?q=Necesito%20pagar%20los%20servicios%20de%20electricidad%20y%20cable.
 es
 ```
 
-* JSON returned
+* return JSON (http://localhost:8080/classify/json?q=...)
 
 ```
 http://localhost:8080/classify/json?q=%22Necesito%20pagar%20los%20servicios%20de%20electricidad%20y%20cable.%22
 ```
 
-```json
+```javascript
 {
 class: "es",
 confidence: "47.82"
@@ -161,7 +163,7 @@ confidence: "47.82"
 http://localhost:8080/labels
 ```
 
-```json
+```javascript
 {
 labels: [
 "dar",
@@ -172,13 +174,13 @@ labels: [
 }
 ```
 
-* JSON for all labels
+* JSON scores for all labels in model (http://localhost:8080/classify/all/json?q=...)
 
 ```
 http://localhost:8080/classify/all/json?q=%22Necesito%20pagar%20los%20servicios%20de%20electricidad%20y%20cable.%22
 ```
 
-```json
+```javascript
 results: [
 {
 class: "es",
@@ -202,11 +204,10 @@ confidence: -0.37207511599381426
 
 * See RESTServiceSpec for details
 
-
 ### Tests
 * LIDSpec has more usage examples. 
 * EvalSpec has tests that show swapping out an LLClass classifier for a langid.py service classifier.
-* TwitterEvalSpec has tests for running against twitter data from https://blog.twitter.com/2015/evaluating-language-identification-performance
+* TwitterEvalSpec has tests for running against twitter data from [Evaluating language identification performance](https://blog.twitter.com/2015/evaluating-language-identification-performance)
 * RESTServiceSpec shows variations on running the RESTService 
 
 ###sbt behind a firewall
@@ -222,7 +223,51 @@ confidence: -0.37207511599381426
 
 #### Twitter Results
 
-### 11 Languages 
+### Twitter : Evaluating language identification performance 
+
+From [Evaluating language identification performance](https://blog.twitter.com/2015/evaluating-language-identification-performance)
+
+#### Precision dataset
+
+Note that the precision_oriented dataset had 69000 tweets but we only could actually download 51567 tweets.
+
+##### Train/Test 85/15 split all labels, no text normalization, minimum 500 examples per label
+
+Labels with fewer than 500 examples were excluded.
+
+|Train|44352|
+|Test|6654|
+|Labels|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,und,ur,vi,zh-CN,zh-TW|
+|Accuracy|0.86654645|
+
+##### Train/Test 85/15 split all labels, no text normalization but skip the und label
+
+The und label marked undefined tweets which could match several languages.
+
+|Train|34546|
+|Test|5183|
+|Labels|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,ur,vi,zh-CN,zh-TW|
+|Accuracy|0.949836|
+
+This model can be found in the release directory if you want to try it yourself.
+
+##### Train/Test 85/15 split all labels, with text normalization, minimum 500 examples per label
+
+Ran a python script to attempt to normalize tweet text to remove markup, hashtags, etc.
+
+|Train|44080|
+|Test|6614|
+|Labels|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,und,ur,vi,zh-CN,zh-TW|
+|Accuracy|0.86815846|
+
+##### Train/Test 85/15 split all labels, with text normalization but skip the und label
+
+|Train|34540|
+|Test|5183|
+|Labels|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,ur,vi,zh-CN,zh-TW|
+|Accuracy|0.95504534|
+
+### 11 Languages small dataset
 
 ```
 2016-04-15 16:11:37.257 [INFO]     # of trials: 825
