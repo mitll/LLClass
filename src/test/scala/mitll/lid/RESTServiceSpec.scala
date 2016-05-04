@@ -29,12 +29,12 @@ import scala.io.Source
 
 class RESTServiceSpec extends FlatSpec with Matchers with LazyLogging {
 
-  it should "start a service from the jar" in {
-    val args = "REST -model models/tweetRecall.mod"
+  ignore should "start a service from the jar" in {
+    val args = "REST -model models/tweetPrecisionNoUnd.mod.gz -port 8888"
     LLClass.main(args.split(" "))
   }
 
-  it should "start a service" in {
+  ignore should "start a service" in {
     val service = new RESTService
     val label = classify("De acuerdo al decano tenemos 59 minutos")
     logger.info("got " + label)
@@ -42,7 +42,7 @@ class RESTServiceSpec extends FlatSpec with Matchers with LazyLogging {
     service.stopServer
   }
 
-  it should "start a service on a different port" in {
+  ignore should "start a service on a different port" in {
     val service = new RESTService(port=8090)
     val label = classify("De acuerdo al decano tenemos 59 minutos")
     logger.info("got " + label)

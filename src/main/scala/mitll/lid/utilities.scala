@@ -88,8 +88,13 @@ object utilities {
 
   def withObjectInput[T](fn: String)(block: (ObjectInputStream) => T) = {
     val f = new ObjectInputStream(
-      if (fn matches """^.*\.gz$""") new GZIPInputStream(new FileInputStream(fn))
-      else if (fn matches """^.*\.zip$""") new ZipInputStream(new FileInputStream(fn))
+      if (fn matches """^.*\.gz$""") {
+        new GZIPInputStream(new FileInputStream(fn))
+      }
+//      else if (fn matches """^.*\.zip$""") {
+//        println("using zip input")
+//        new ZipInputStream(new FileInputStream(fn))
+//      }
       else new FileInputStream(fn))
     try {
       block(f)
@@ -289,7 +294,7 @@ object utilities {
       val labelArr = input.map(_._2).toSeq
       val labels = Set(labelArr: _*).toArray
 
-      log("INFO", "Labels in the training data are (n = " + labels.size + "): " + labels.map(_.name).mkString(" "))
+      log("INFO", "Labels in the training data are (n = " + labels.size + "): " + labels.map(_.name).sorted.mkString(" "))
       val model = lmFactory(labels.map(x => Array.fill(dim)(0.0)), labels)
       if (regress) model.regress(input, average, iterations)
       else model.train(input, average, iterations)
@@ -436,8 +441,8 @@ object utilities {
     var (correct, total) = (0.0f, 0.0f)
     var confmat = HashMap[Symbol, Map[Symbol, Double]]()
     def printConfMat: Array[String] = {
-      val outputs = Set(confmat.values.flatMap(_.keySet).toSeq: _*).toList.sortWith(_.name > _.name)
-      val truths = confmat.keys.toList.sortWith(_.name > _.name)
+      val outputs = Set(confmat.values.flatMap(_.keySet).toSeq: _*).toList.sortWith(_.name < _.name)
+      val truths = confmat.keys.toList.sortWith(_.name < _.name)
       var ret = ArrayBuffer((Array("") ++ outputs.map(_.name) ++ Array("N", "class %")).map("%10s" % _).mkString(" "))
       for (t <- truths) {
         val rowTotal = confmat(t).foldLeft(0.0)((res, v) => res + v._2)
@@ -640,7 +645,7 @@ object utilities {
     def close = cachedBufferedSource.close
   }
 
-  case class FileLines[T](fn: String, enc: String = "UTF8", maker: (String) => T = (x: String) => x) extends IterableView[T, EagerFileLines[T]] {
+  case class FileLines[T >: String](fn: String, enc: String = "UTF8", maker: (String) => T = (x: String) => x) extends IterableView[T, EagerFileLines[T]] {
     val a = new EagerFileLines[T](fn, enc, maker)
     protected lazy val underlying = a
 
@@ -648,22 +653,4 @@ object utilities {
 
     def close = underlying.close
   }
-
-  /*  def makeOneFilePerLanguage(lidNativeDocs: String, dest: String) = {
-      new File(dest).mkdir()
-      val LabelTextSpace =
-        """^\s*(\S+)\s+(.*)$""".r
-
-      val lines: FileLines[String] = FileLines(lidNativeDocs)
-      var labelToFile = Map[String, File]()
-      lines.foreach {
-        case (LabelTextSpace(label, text)) => {
-          val writer = labelToFile.getOrElse(label, new FileWriter(dest + File.separator + label + ".txt", true))
-          labelToFile += (label -> writer)
-          writer.write(text + "\n")
-
-        };
-      }
-      labelToFile.values.foreach { f => f.close() }
-    }*/
 }

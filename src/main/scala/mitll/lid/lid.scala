@@ -19,13 +19,13 @@
 
 package mitll.lid
 
-import java.io.File
+import java.io.{File, Serializable}
 import java.net.URLEncoder
 
 import com.typesafe.scalalogging._
 import mitll.lid.utilities._
 
-import scala.collection.mutable
+import scala.collection.{IterableView, mutable}
 import scala.collection.mutable.{ArrayBuffer, Map}
 import scala.collection.parallel.ParIterable
 import scala.io.{BufferedSource, Source}
@@ -40,16 +40,18 @@ object LLClass extends LazyLogging {
 
   def main(args: Array[String]) {
     if (args.length < 1) {
-      logger.error("Usage : expecting args like : LID -all test/original4.tsv.gz")
+      logger.error("Usage : expecting args like : LID -all test/news4L-500each.tsv.gz or REST")
     }
     else {
       var run = args(0)
       if (run == "REST") {
         val miniArg = new MiniArg()
-        miniArg.parseArgs(args)
+        args.foreach(println(_))
 
-        logger.info("Got " + miniArg)
-        service = new RESTService(miniArg.modelFile, miniArg.port)
+        miniArg.parseArgs(args.slice(1, args.length))
+
+        logger.info("REST args " + miniArg.modelFile + " " + miniArg.port)
+        service = new RESTService(miniArg.modelFile, miniArg.hostname, miniArg.port)
         Thread.sleep(Long.MaxValue)
       }
       else if (run == "multiparam") {
@@ -66,11 +68,12 @@ object LLClass extends LazyLogging {
   }
 }
 
-class MiniArg(var modelFile: String = "models/news4L.mod", var port: Int = 8080) extends ArgHandler {
+class MiniArg(var modelFile: String = "models/news4L.mod", var hostname:String ="localhost",var port: Int = 8080) extends ArgHandler {
   val program = "RESTService -model modelFile -port port"
 
   config += "General" ->
-    Params("modelFile" -> Arg(modelFile _, modelFile_= _, "model file"),
+    Params("model" -> Arg(modelFile _, modelFile_= _, "model file"),
+      "hostname" -> Arg(hostname _, hostname_= _, "hostname for http server"),
       "port" -> Arg(port _, port_= _, "port"))
 }
 
@@ -205,10 +208,17 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
 
   val skipLabels = (labeltext: (String, Symbol)) => labeltext._1
 
-  def labelledFileInput(fn: String) = FileLines(fn).zipWithIndex.map {
-    case (LabelText(label, text), idx) => text -> Symbol(label);
-    case (LabelTextSpace(label, text), idx) => text -> Symbol(label);
-    case (text@_, idx) => throw Fatal("line " + idx + ": '" + text + "' doesn't match expected format of label followed by text!");
+  def labelledFileInput(fn: String): IterableView[(String, Symbol), Iterable[_]] = {
+    val result: IterableView[(String, Symbol), Iterable[_]] = FileLines(fn).zipWithIndex.map {
+      case (LabelText(label, text), idx)      => text -> Symbol(label);
+      case (LabelTextSpace(label, text), idx) => text -> Symbol(label);
+      case (text@_, idx) => {
+        log("WARN","line " + idx + ": '" + text + "' doesn't match expected format of label followed by text!")
+        ""->Symbol("")
+      };
+    }
+
+    result.filter(x => x._1.nonEmpty)
   }
 
   // -------------------------------------------------------------------------------------------------------------------------------------

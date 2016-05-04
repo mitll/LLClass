@@ -24,13 +24,6 @@ import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.mutable.{ArrayBuffer, Map}
 
-// [TODO] need a library interface that allows:
-// abstract class Classifier(val model : LinearModel) {
-//   def train[I](labelledFeatureExtractor : (I) => (FV, Symbol), );
-//   def regress[I](labelledFeatureExtractor : (I) => (FV, Float));
-//   def classify(fv : FV) : Array[(Double, Symbol)];
-// }
-
 trait Classifier[I] {
   val fExtractor: Function1[I, FV]
 
@@ -90,8 +83,8 @@ trait TrainerTemplate extends InternalPipeSupport with LazyLogging {
   }
 
   def datasetBreakdown[T](set: Map[Symbol, ArrayBuffer[(T, Symbol)]]) {
-    val skeys = set.keys.toList.sortWith(_.name > _.name)
-    log("DEBUG", "Labels in dataset (" + skeys.size + ") = " + skeys)
+    val skeys = set.keys.toList.sortWith(_.name < _.name)
+    log("DEBUG", "Labels in dataset (" + skeys.size + ") = " + skeys.map(_.name))
     log("INFO", "Dataset breakdown")
     log.separator()
     var total = 0

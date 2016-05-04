@@ -33,19 +33,19 @@ class TwitterEvalSpec extends FlatSpec with Matchers with LazyLogging {
     overallAccuracy shouldBe expected +- 0.001f
   }
 
-  it should "return labels of recall model" in {
+  ignore should "return labels of recall model" in {
     val newsRunner = new mitll.lid.Scorer("models/tweetRecall.mod")
     val labels = newsRunner.getLabels
-    labels should contain only ("am", "ar", "bg", "bn", "bo", "bs", "ca", "ckb", "cs", "cy", "da", "de", "dv", "el",
+    labels should contain only("am", "ar", "bg", "bn", "bo", "bs", "ca", "ckb", "cs", "cy", "da", "de", "dv", "el",
       "en", "es", "et", "eu", "fa", "fi", "fr", "gu", "he", "hi", "hi-Latn", "hr", "ht", "hu", "hy", "id", "is", "it",
       "ja", "ka", "km", "kn", "ko", "lo", "lv", "ml", "mr", "my", "ne", "nl", "no", "pa", "pl", "ps", "pt", "ro", "ru",
       "sd", "si", "sk", "sl", "sr", "sv", "ta", "te", "th", "tl", "tr", "uk", "ur", "vi", "zh-CN", "zh-TW")
   }
 
-  it should "return labels of zipped recall model" in {
+  ignore should "return labels of zipped recall model" in {
     val newsRunner = new mitll.lid.Scorer("models/tweetRecall.mod.gz")
     val labels = newsRunner.getLabels
-    labels should contain only ("am", "ar", "bg", "bn", "bo", "bs", "ca", "ckb", "cs", "cy", "da", "de", "dv", "el",
+    labels should contain only("am", "ar", "bg", "bn", "bo", "bs", "ca", "ckb", "cs", "cy", "da", "de", "dv", "el",
       "en", "es", "et", "eu", "fa", "fi", "fr", "gu", "he", "hi", "hi-Latn", "hr", "ht", "hu", "hy", "id", "is", "it",
       "ja", "ka", "km", "kn", "ko", "lo", "lv", "ml", "mr", "my", "ne", "nl", "no", "pa", "pl", "ps", "pt", "ro", "ru",
       "sd", "si", "sk", "sl", "sr", "sv", "ta", "te", "th", "tl", "tr", "uk", "ur", "vi", "zh-CN", "zh-TW")
@@ -54,7 +54,7 @@ class TwitterEvalSpec extends FlatSpec with Matchers with LazyLogging {
   ignore should "return labels of precision model" in {
     val newsRunner = new mitll.lid.Scorer("models/tweetPrecision.mod")
     val labels = newsRunner.getLabels
-    labels should contain only ("am", "ar", "bn", "ckb", "de", "el", "en", "es", "fa", "fr", "gu", "he", "hi",
+    labels should contain only("am", "ar", "bn", "ckb", "de", "el", "en", "es", "fa", "fr", "gu", "he", "hi",
       "hi-Latn", "hy", "id", "it", "ja", "ka", "km", "kn", "lo", "ml", "mr", "my", "ne", "nl", "pa", "pl", "ps",
       "pt", "ru", "sd", "si", "sr", "sv", "ta", "te", "th", "und", "ur", "vi", "zh-CN", "zh-TW")
   }
@@ -62,7 +62,7 @@ class TwitterEvalSpec extends FlatSpec with Matchers with LazyLogging {
   ignore should "return labels of uniform model" in {
     val newsRunner = new mitll.lid.Scorer("models/tweetUniform.mod")
     val labels = newsRunner.getLabels
-    labels should contain only ("ar", "en", "es", "fr", "id", "ja", "ko", "pt", "ru", "th", "tl", "tr", "und")
+    labels should contain only("ar", "en", "es", "fr", "id", "ja", "ko", "pt", "ru", "th", "tl", "tr", "und")
   }
 
   ignore should "use recall model to test uniform" in {
@@ -71,15 +71,35 @@ class TwitterEvalSpec extends FlatSpec with Matchers with LazyLogging {
     true shouldBe true
   }
 
+  ignore should "train a model over precision norm corpus and save it" in {
+    val args = "-all test/precCorpusNorm.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNorm.mod"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.868f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
+  ignore should "train a model over precision norm corpus skip und labels and save it" in {
+    val args = "-all test/precCorpusNormNoUnd.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNormNoUnd.mod"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.949f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
   ignore should "train a model over precision corpus and save it" in {
     val args = "-all test/precisionCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecision.mod"
     val overallAccuracy = new LID().ep(args.split(" "))
-    true shouldBe true
-    //    val expected = 0.870f
-    //    overallAccuracy shouldBe expected +- 0.001f
+    val expected = 866f
+    overallAccuracy shouldBe expected +- 0.001f
   }
 
-  ignore should "train a model over uniform corpus and save it" in {
+  ignore should "train a model over precision corpus skip und labels and save it" in {
+    val args = "-all test/precisionCorpusNoUnd.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNoUnd.mod"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.955f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
+  it should "train a model over uniform corpus and save it" in {
     val args = "-all test/uniformCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetUniform.mod"
     val overallAccuracy = new LID().ep(args.split(" "))
     true shouldBe true
@@ -117,14 +137,49 @@ class TwitterEvalSpec extends FlatSpec with Matchers with LazyLogging {
     true shouldBe true
   }
 
+  ignore should "filter out und" in {
+    filterOutLabel("test/precCorpusNorm.tsv","test/precCorpusNormNoUnd.tsv","und")
+  }
+
+  it should "filter out und on prec corpus" in {
+    filterOutLabel("test/precisionCorpus.tsv","test/precisionCorpusNoUnd.tsv","und")
+  }
+
+  def filterOutLabel(file: String, outfile: String, labelOut: String): Unit = {
+    val LabelText =
+      """(?s)^(\S+)\t+(.*)$""".r
+
+    val LabelTextSpace =
+      """^\s*(\S+)\s+(.*)$""".r
+
+
+    val filtered = FileLines(file).filter(line => {
+      line match {
+        case LabelText(label, text) => !label.equals(labelOut)
+        case LabelTextSpace(label, text) => !label.equals(labelOut)
+        case _ => true
+      }
+    })
+
+    new File(outfile).delete()
+    val writer = new FileWriter(outfile, true)
+    filtered.foreach(line => {
+      writer.write(line)
+      writer.write("\n")
+    })
+    writer.close()
+  }
+
   // TODO : filter out small classes, e.g. or
   def makeOurFormat(originJSON: String, labelFile: String, outputCorpus: String): Unit = {
     var idToContent = Map[String, String]()
+    val exampleTwitterID: String = "489241303667204098"
+
     FileLines(originJSON).foreach {
       line =>
         val parts = line.split("\",\"")
-        val id = line.substring(2, 2 + "489241303667204098".length)
-        val content = line.substring(5 + "489241303667204098".length).dropRight(1)
+        val id = line.substring(2, 2 + exampleTwitterID.length)
+        val content = line.substring(5 + exampleTwitterID.length).dropRight(1)
         if (id.trim.isEmpty) {
           logger.error("missing id for " + line)
         }

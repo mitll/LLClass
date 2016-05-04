@@ -9,11 +9,8 @@ import org.http4s.headers.`Content-Type`
 import org.http4s.server.Server
 import org.http4s.server.blaze.BlazeBuilder
 
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext
 import scalaz.concurrent.Task
-import scalaz.stream._
 
 /**
   * Simple REST Service for LLClass
@@ -22,12 +19,12 @@ import scalaz.stream._
   *
   * Created by go22670 on 4/25/16.
   */
-class RESTService(modelFile: String = "models/news4L.mod", port: Int = 8080) extends LazyLogging {
+class RESTService(modelFile: String = "models/news4L.mod", hostname: String = "localhost", port: Int = 8080)(implicit ec: ExecutionContext = ExecutionContext.global) extends LazyLogging {
   val scorer = new mitll.lid.Scorer(modelFile)
 
   object T extends QueryParamDecoderMatcher[String]("q")
 
-  def rootService(implicit executionContext: ExecutionContext) = HttpService {
+  def rootService = HttpService {
     case GET -> Root / "labels" =>
       val labels: Seq[Json] = scorer.getLabels.map(Json.fromString)
       val jsonOuter = Json.obj("labels" -> Json.fromValues(labels))
@@ -38,15 +35,15 @@ class RESTService(modelFile: String = "models/news4L.mod", port: Int = 8080) ext
       val (language, confidence) = scorer.textLID(search)
       Ok(s"$language")
 
-    case GET -> Root /"classify" / "json" :? T(search) =>
+    case GET -> Root / "classify" / "json" :? T(search) =>
       textLID(search)
 
-//    case req @ POST -> Root / "classifyJSON"  =>
-//      val value = new ArrayBuffer[String]()
-//      req.body to io.fillBuffer(value).run
-//      textLID("dude")
+    //    case req @ POST -> Root / "classifyJSON"  =>
+    //      val value = new ArrayBuffer[String]()
+    //      req.body to io.fillBuffer(value).run
+    //      textLID("dude")
 
-    case GET -> Root / "classify" /  "all" / "json"  :? T(search) =>
+    case GET -> Root / "classify" / "all" / "json" :? T(search) =>
       val full = scorer.textLIDFull(search)
       val map = full.map {
         p => Json.obj("class" -> Json.fromString(p._1.name),
@@ -69,8 +66,13 @@ class RESTService(modelFile: String = "models/news4L.mod", port: Int = 8080) ext
   var myServer: Server = null
 
   def getServer = {
-    val builder = BlazeBuilder.mountService(rootService(ExecutionContext.global))
-    myServer = builder.run
+    val task = BlazeBuilder.bindHttp(port,hostname)
+      .mountService(rootService, "/")
+      .run
+
+    task.awaitShutdown()
+
+    myServer = task
   }
 
   def stopServer() = if (myServer != null) myServer.shutdownNow() else println("server not running")
@@ -86,7 +88,9 @@ object RESTService extends LazyLogging {
       println("Using model " + args(0))
       model = args(0)
     }
-    new RESTService(model, 8080)
+    logger.info("calling RESTService ----------- ")
+
+    new RESTService(model, "localhost", 8080)
 
     Thread.sleep(Long.MaxValue)
   }
