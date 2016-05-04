@@ -28,13 +28,13 @@ This creates a jar under target at
 ```
 [info] Packaging ... target/scala-2.11/LLClass-assembly-1.0.jar
 ```
-For ease of use during tasks, you can rename the jar and put it in the top-level directory:
+For examples below, you can add a link to the jar:
 ```
-mv target/scala-2.11/LLClass-assembly-1.0.jar ./LLClass.jar 
+ln -s target/scala-2.11/LLClass-assembly-1.0.jar LLClass.jar
 ```
 
 ### Data Format Description
-* The data should be separated tab-separated between label and document example. Each document example should be newline-separated
+* The data should one line per example, separated with a tab or whitespace between label and document.
 
 ##### Example Data Format:
 ```
@@ -147,7 +147,9 @@ es
 
 ```
 http://localhost:8080/classify/json?q=%22Necesito%20pagar%20los%20servicios%20de%20electricidad%20y%20cable.%22
+```
 
+```json
 {
 class: "es",
 confidence: "47.82"
@@ -157,7 +159,9 @@ confidence: "47.82"
 * Model labels
 ```
 http://localhost:8080/labels
+```
 
+```json
 {
 labels: [
 "dar",
@@ -172,7 +176,9 @@ labels: [
 
 ```
 http://localhost:8080/classify/all/json?q=%22Necesito%20pagar%20los%20servicios%20de%20electricidad%20y%20cable.%22
+```
 
+```json
 results: [
 {
 class: "es",
@@ -198,7 +204,10 @@ confidence: -0.37207511599381426
 
 
 ### Tests
-* See LIDSpec for more usage examples.
+* LIDSpec has more usage examples. 
+* EvalSpec has tests that show swapping out an LLClass classifier for a langid.py service classifier.
+* TwitterEvalSpec has tests for running against twitter data from https://blog.twitter.com/2015/evaluating-language-identification-performance
+* RESTServiceSpec shows variations on running the RESTService 
 
 ###sbt behind a firewall
 * You may need to add a repositories file like this under your ~/.sbt directory:
@@ -232,26 +241,5 @@ confidence: -0.37207511599381426
 2016-04-15 16:11:37.258 [INFO]     accuracy = 0.807273
 ```
 
-### 4 Languages 5K each
 
-```
-2016-04-15 16:17:37.165 [INFO]     # of trials: 3000
-2016-04-15 16:17:37.166 [INFO]                        no         nl         en         da          N    class %
-2016-04-15 16:17:37.166 [INFO]             no        652         41         36         21        750   0.869333
-2016-04-15 16:17:37.166 [INFO]             nl         20        706         19          5        750   0.941333
-2016-04-15 16:17:37.166 [INFO]             en         31         13        685         21        750   0.913333
-2016-04-15 16:17:37.166 [INFO]             da         84         23         18        625        750   0.833333
-2016-04-15 16:17:37.166 [INFO]     accuracy = 0.889333
-```
 
-### 4 Languages 500 each
-
-```
-2016-04-15 16:20:11.074 [INFO]     # of trials: 300
-2016-04-15 16:20:11.075 [INFO]                        no         nl         en         da          N    class %
-2016-04-15 16:20:11.075 [INFO]             no         45         13          7         10         75   0.600000
-2016-04-15 16:20:11.075 [INFO]             nl          3         63          4          5         75   0.840000
-2016-04-15 16:20:11.075 [INFO]             en          7          0         57         11         75   0.760000
-2016-04-15 16:20:11.075 [INFO]             da         20          3          4         48         75   0.640000
-2016-04-15 16:20:11.075 [INFO]     accuracy = 0.710000
-```
