@@ -84,7 +84,6 @@ java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz
 java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 10
 ```
 
-
 #### Save score files, model files, and log files, use 85/15 train/test split (optional - specify and save the resulting model, log and score files):
 ```
 java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iterations 30 -model news4L.mod -log news4L.log -score news4L.score
@@ -92,22 +91,22 @@ java -jar LLClass.jar LID -all test/news4L-500each.tsv.gz -split 0.15 -iteration
 
 #### Apply an existing model to new test data 
 ```
-java -jar LLClass.jar LID -test new.tsv.gz -model models/news4L.mod
+java -jar LLClass.jar LID -test test/no_nl_da_en_5K.tsv.gz -model models/fourLang.mod.gz
 ```
 
 #### Train and test on different data sets
 ```
-java -jar LLClass.jar LID -train data1.tsv.gz -test data2.tsv.gz
+java -jar LLClass.jar LID -train test/no_nl_da_en_5k.tsv.gz -test test/no_nl_da_en_500.tsv.gz 
 ```
 
-###To run with separate train/test sets specify model and score files (optional - specify and save the resulting model, log, and score files):
-``` 
-java -jar LLClass.jar -train data1.tsv.gz -test data2.tsv.gz -model model.mod -log log.log -score score.score
-```
+### Calling from Java/Scala
+ 
+There are two functions to score text. 
 
-#### The wrapper class can be instantiated inside of another Java/Scala program. There are two functions to score text. The function textLID() returns the language code and a confidence value for that code. The function textLIDFull() returns a set of language labels ranked by most likely to least likely and a confidence value for each one. 
+* textLID() returns the language code and a confidence value for that code. 
+* textLIDFull() returns a set of language labels ranked by most likely to least likely and a confidence value for each one. 
 
-### Use the class mitll.SCORE
+#### Steps to use mitll.SCORE
 1) create an instance of the SCORE class and Sspecify the LID model
 ```
 var newsRunner = mitll.SCORE("path/to/lid/model")
@@ -116,7 +115,7 @@ var newsRunner = mitll.SCORE("path/to/lid/model")
 ```
 var (language, confidence) = newsRunner.textLID("what language is this text string?")
 ```
-3) call the function mitll.SCORE.textLIDFull()
+3) or call the function mitll.SCORE.textLIDFull()
 ```
 var langConfArray : Array[(String,Double)] = newsRunner.textLIDFull("what language is this text string?")
 ```
