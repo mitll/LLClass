@@ -235,6 +235,8 @@ Note that the precision_oriented dataset had 69000 tweets but we only could actu
 
 Labels with fewer than 500 examples were excluded.
 
+|Info|Value|
+|----|-----|
 |Train|44352|
 |Test|6654|
 |Labels|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,und,ur,vi,zh-CN,zh-TW|
@@ -244,6 +246,8 @@ Labels with fewer than 500 examples were excluded.
 
 The und label marked undefined tweets which could match several languages.
 
+|Info|Value|
+|----|-----|
 |Train|34546|
 |Test|5183|
 |Labels|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,ur,vi,zh-CN,zh-TW|
@@ -255,6 +259,8 @@ This model can be found in the release directory if you want to try it yourself.
 
 Ran a python script to attempt to normalize tweet text to remove markup, hashtags, etc.
 
+|Info|Value|
+|----|-----|
 |Train|44080|
 |Test|6614|
 |Labels|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,und,ur,vi,zh-CN,zh-TW|
@@ -262,6 +268,8 @@ Ran a python script to attempt to normalize tweet text to remove markup, hashtag
 
 ##### Train/Test 85/15 split all labels, with text normalization but skip the und label
 
+|Info|Value|
+|----|-----|
 |Train|34540|
 |Test|5183|
 |Labels|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,ur,vi,zh-CN,zh-TW|
