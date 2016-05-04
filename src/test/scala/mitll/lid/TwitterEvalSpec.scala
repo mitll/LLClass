@@ -26,12 +26,63 @@ import mitll.lid.utilities.FileLines
 import org.scalatest._
 
 class TwitterEvalSpec extends FlatSpec with Matchers with LazyLogging {
-  ignore should "train a model over recall corpus" in {
+  ignore should "train a model over recall corpus and save it" in {
     val args = "-all test/recallCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetRecall.mod"
     val overallAccuracy = new LID().ep(args.split(" "))
     val expected = 0.923f
     overallAccuracy shouldBe expected +- 0.001f
   }
+
+  ignore should "train a model over recall normalized corpus and save it" in {
+    val args = "-all test/recallCorpusNorm.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetRecallNorm.mod"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.923f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
+  ignore should "train a model over precision norm corpus and save it" in {
+    val args = "-all test/precCorpusNorm.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNorm.mod"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.868f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
+  ignore should "train a model over precision norm corpus skip und labels and save it" in {
+    val args = "-all test/precCorpusNormNoUnd.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNormNoUnd.mod"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.949f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
+  ignore should "train a model over precision corpus and save it" in {
+    val args = "-all test/precisionCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecision.mod"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 866f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
+  ignore should "train a model over precision corpus skip und labels and save it" in {
+    val args = "-all test/precisionCorpusNoUnd.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNoUnd.mod"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.955f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
+  ignore should "train a model over uniform corpus and save it" in {
+    val args = "-all test/uniformCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetUniform.mod"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.909f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
+  ignore should "train a model over uniform normalized corpus and save it" in {
+    val args = "-all test/uniformCorpusNorm.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetUniformNorm.mod"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.9291058f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
+  // check labels
 
   ignore should "return labels of recall model" in {
     val newsRunner = new mitll.lid.Scorer("models/tweetRecall.mod")
@@ -65,46 +116,11 @@ class TwitterEvalSpec extends FlatSpec with Matchers with LazyLogging {
     labels should contain only("ar", "en", "es", "fr", "id", "ja", "ko", "pt", "ru", "th", "tl", "tr", "und")
   }
 
-  ignore should "use recall model to test uniform" in {
+  // use test set another model
+  it should "use recall model to test uniform" in {
     val args = "-test test/uniformCorpus.tsv -model models/tweetRecall.mod"
     val overallAccuracy = new LID().ep(args.split(" "))
     true shouldBe true
-  }
-
-  ignore should "train a model over precision norm corpus and save it" in {
-    val args = "-all test/precCorpusNorm.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNorm.mod"
-    val overallAccuracy = new LID().ep(args.split(" "))
-    val expected = 0.868f
-    overallAccuracy shouldBe expected +- 0.001f
-  }
-
-  ignore should "train a model over precision norm corpus skip und labels and save it" in {
-    val args = "-all test/precCorpusNormNoUnd.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNormNoUnd.mod"
-    val overallAccuracy = new LID().ep(args.split(" "))
-    val expected = 0.949f
-    overallAccuracy shouldBe expected +- 0.001f
-  }
-
-  ignore should "train a model over precision corpus and save it" in {
-    val args = "-all test/precisionCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecision.mod"
-    val overallAccuracy = new LID().ep(args.split(" "))
-    val expected = 866f
-    overallAccuracy shouldBe expected +- 0.001f
-  }
-
-  ignore should "train a model over precision corpus skip und labels and save it" in {
-    val args = "-all test/precisionCorpusNoUnd.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNoUnd.mod"
-    val overallAccuracy = new LID().ep(args.split(" "))
-    val expected = 0.955f
-    overallAccuracy shouldBe expected +- 0.001f
-  }
-
-  it should "train a model over uniform corpus and save it" in {
-    val args = "-all test/uniformCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetUniform.mod"
-    val overallAccuracy = new LID().ep(args.split(" "))
-    true shouldBe true
-    //    val expected = 0.870f
-    //    overallAccuracy shouldBe expected +- 0.001f
   }
 
   ignore should "merge precision eval json" in {
@@ -141,7 +157,7 @@ class TwitterEvalSpec extends FlatSpec with Matchers with LazyLogging {
     filterOutLabel("test/precCorpusNorm.tsv","test/precCorpusNormNoUnd.tsv","und")
   }
 
-  it should "filter out und on prec corpus" in {
+  ignore should "filter out und on prec corpus" in {
     filterOutLabel("test/precisionCorpus.tsv","test/precisionCorpusNoUnd.tsv","und")
   }
 

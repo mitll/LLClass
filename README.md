@@ -239,7 +239,7 @@ Labels with fewer than 500 examples were excluded.
 |----|-----|
 |Train|44352|
 |Test|6654|
-|Labels|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,und,ur,vi,zh-CN,zh-TW|
+|Labels(44)|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,und,ur,vi,zh-CN,zh-TW|
 |Accuracy|0.86654645|
 
 ##### Train/Test 85/15 split all labels, no text normalization but skip the und label
@@ -250,7 +250,7 @@ The und label marked undefined tweets which could match several languages.
 |----|-----|
 |Train|34546|
 |Test|5183|
-|Labels|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,ur,vi,zh-CN,zh-TW|
+|Labels(43)|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,ur,vi,zh-CN,zh-TW|
 |Accuracy|0.949836|
 
 This model can be found in the release directory if you want to try it yourself.
@@ -263,7 +263,7 @@ Ran a python script to attempt to normalize tweet text to remove markup, hashtag
 |----|-----|
 |Train|44080|
 |Test|6614|
-|Labels|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,und,ur,vi,zh-CN,zh-TW|
+|Labels(44)|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,und,ur,vi,zh-CN,zh-TW|
 |Accuracy|0.86815846|
 
 ##### Train/Test 85/15 split all labels, with text normalization but skip the und label
@@ -272,10 +272,69 @@ Ran a python script to attempt to normalize tweet text to remove markup, hashtag
 |----|-----|
 |Train|34540|
 |Test|5183|
-|Labels|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,ur,vi,zh-CN,zh-TW|
+|Labels(43)|ar,bn,ckb,de,el,en,es,fa,fr,gu,he,hi,hi-Latn,hy,id,it,ja,ka,km,kn,lo,ml,mr,my,ne,nl,pa,pl,ps,pt,ru,sd,si,sr,sv,ta,te,th,ur,vi,zh-CN,zh-TW|
 |Accuracy|0.95504534|
 
-### 11 Languages small dataset
+#### Recall
+
+##### Train/Test 85/15 split all labels, no text normalization, minimum 500 examples per label
+
+Initial data had 72000 of 87585 tweets from recall_oriented.
+
+|Info|Value|
+|----|-----|
+|Train|71196|
+|Test|10682|
+|Labels (67)|am, ar, bg, bn, bo, bs, ca, ckb, cs, cy, da, de, dv, el, en, es, et, eu, fa, fi, fr, gu, he, hi, hi-Latn, hr, ht, hu, hy, id, is, it, ja, ka, km, kn, ko, lo, lv, ml, mr, my, ne, nl, no, pa, pl, ps, pt, ro, ru, sd, si, sk, sl, sr, sv, ta, te, th, tl, tr, uk, ur, vi, zh-CN, zh-TW|
+|Accuracy|0.9237971|
+
+See model in releases.
+
+##### Train/Test 85/15 split all labels, with text normalization, minimum 500 examples per label
+
+Initial data had 72000 of 87585 tweets from recall_oriented.
+
+|Info|Value|
+|----|-----|
+|Train|71187|
+|Test|10680|
+|Labels (67)|am, ar, bg, bn, bo, bs, ca, ckb, cs, cy, da, de, dv, el, en, es, et, eu, fa, fi, fr, gu, he, hi, hi-Latn, hr, ht, hu, hy, id, is, it, ja, ka, km, kn, ko, lo, lv, ml, mr, my, ne, nl, no, pa, pl, ps, pt, ro, ru, sd, si, sk, sl, sr, sv, ta, te, th, tl, tr, uk, ur, vi, zh-CN, zh-TW|
+|Accuracy|0.9238764|
+
+#### Uniform
+
+##### Train/Test 85/15 split all labels, no text normalization, minimum 500 examples per label
+
+|Info|Value|
+|----|-----|
+|Train|76442|
+|Test|11467|
+|Labels (13)|ar, en, es, fr, id, ja, ko, pt, ru, th, tl, tr, und|
+|Accuracy|0.9098282|
+
+##### Train/Test 85/15 split all labels, with text normalization, minimum 500 examples per label
+
+|Info|Value|
+|----|-----|
+|Train|74854|
+|Test|11228|
+|Labels (13)|ar, en, es, fr, id, ja, ko, pt, ru, th, tl, tr, und|
+|Accuracy|0.9291058|
+
+### Freetext
+
+#### [Europarl](https://code.google.com/archive/p/language-detection/downloads)
+
+|Info|Value|
+|----|-----|
+|Train|74854|
+|Test|3150|
+|Labels (21)|bg cs da de el en es et fi fr hu it lt lv nl pl pt ro sk sl sv|
+|Accuracy|0.99841267|
+
+See releases for model.
+
+### Twitter 11 Languages small dataset
 
 ```
 2016-04-15 16:11:37.257 [INFO]     # of trials: 825

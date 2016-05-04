@@ -27,6 +27,13 @@ import org.scalatest._
 
 class EvalSpec extends FlatSpec with Matchers with LazyLogging {
 
+  ignore should "train europarl corpus" in {
+    val args = "-all test/europarl.test -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/europarl.mod"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.99841267
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
   ignore should "test against langid.py" in {
     //  val args = "test/twitter-11-500each.tsv.gz"
     val overallAccuracy = new LID().testLangid("test/twitter-11-500each.tsv.gz")
