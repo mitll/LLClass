@@ -15,21 +15,25 @@ More documentation can be found under docs : [Auto ILR Paper](docs/Shen_Williams
 
 ###Build Dependencies
 * scala 2.11.8
-* Java 1.8
 * sbt
+* Java 1.8
 
 ### To Compile Source Code and Build
 At top-level directory type:
 ```
 sbt assembly
 ```
-Running this command will cause SBT to download some dependencies, this may take some time depending on your internet connection. If you use a proxy, you may need to adjust your local proxy settings to allow SBT to fetch dependencies. If you are behind a firewall, you may need to add a configuration file in your ```~/.sbt``` directory. See [sbt behind a firewall](###sbt behind a firewall) for more information.
+Running this command will cause SBT to download some dependencies, this may take some time depending on your internet connection. 
+
+If you use a proxy, you may need to adjust your local proxy settings to allow SBT to fetch dependencies. 
+
+If you are behind a firewall, you may need to add a configuration file in your ```~/.sbt``` directory. See the [SBT Behind a Firewall](#sbt-behind-a-firewall) section for more details.
 
 This creates a jar under target at 
 ```
 [info] Packaging ... target/scala-2.11/LLClass-assembly-1.1.jar
 ```
-For examples below, you can add a link to the jar:
+For examples below, you can add a link to the jar (from the top-level directory):
 ```
 ln -s target/scala-2.11/LLClass-assembly-1.1.jar LLClass.jar
 ```
