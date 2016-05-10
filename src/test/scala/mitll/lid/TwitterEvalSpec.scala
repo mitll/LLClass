@@ -117,7 +117,7 @@ class TwitterEvalSpec extends FlatSpec with Matchers with LazyLogging {
   }
 
   // use test set another model
-  it should "use recall model to test uniform" in {
+  ignore should "use recall model to test uniform" in {
     val args = "-test test/uniformCorpus.tsv -model models/tweetRecall.mod"
     val overallAccuracy = new LID().ep(args.split(" "))
     true shouldBe true
@@ -183,6 +183,43 @@ class TwitterEvalSpec extends FlatSpec with Matchers with LazyLogging {
       writer.write(line)
       writer.write("\n")
     })
+    writer.close()
+  }
+
+  ignore should "clean quotes" in {
+    clean()
+  }
+
+  def clean(): Unit = {
+    val dir = new File("test")
+    val cleaned = new File("cleaned")
+    cleaned.mkdir();
+    dir.listFiles().foreach {
+      file =>
+        if (file.getName.contains("orpus")) {
+          println("cleaning " +file.getName)
+          cleanQuotes(file.getAbsolutePath,"cleaned/"+file.getName)
+        }
+    }
+  }
+
+  def cleanQuotes(quotes: String, outputCorpus: String): Unit = {
+    new File(outputCorpus).delete()
+    val writer = new FileWriter(outputCorpus, true)
+
+    FileLines(quotes).foreach {
+      line =>
+        if (line.endsWith("\"")) {
+          var outline = line.dropRight(1)
+          writer.write(outline)
+          writer.write("\n")
+        }
+        else {
+          writer.write(line)
+          writer.write("\n")
+        }
+    }
+
     writer.close()
   }
 
