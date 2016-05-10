@@ -19,25 +19,19 @@
 
 package mitll.lid
 
-import java.io.{File, Serializable}
+import java.io._
 import java.net.URLEncoder
 
 import com.typesafe.scalalogging._
 import mitll.lid.utilities._
 
-import scala.collection.{IterableView, mutable}
 import scala.collection.mutable.{ArrayBuffer, Map}
 import scala.collection.parallel.ParIterable
+import scala.collection.{IterableView, mutable}
 import scala.io.{BufferedSource, Source}
 import scala.{Iterable, Seq}
 
 object LLClass extends LazyLogging {
-  var service : RESTService = null
-
-  sys addShutdownHook {
-    if (service != null) service.stopServer()
-  }
-
   def main(args: Array[String]) {
     if (args.length < 1) {
       println("Usage : expecting args like : LID -all test/news4L-500each.tsv.gz or REST -model models/news4L.mod")
@@ -48,13 +42,7 @@ object LLClass extends LazyLogging {
     }
     else {
       var run = args(0)
-      if (run == "REST") {
-        val miniArg = new MiniArg()
-        miniArg.parseArgs(args.slice(1, args.length))
-        service = new RESTService(miniArg.modelFile, miniArg.hostname, miniArg.port)
-        Thread.sleep(Long.MaxValue)
-      }
-      else if (run == "multiparam") {
+      if (run == "multiparam") {
         new multiparam().main(args.slice(1, args.length))
       }
       else if (run == "LID") {
@@ -68,7 +56,7 @@ object LLClass extends LazyLogging {
   }
 }
 
-class MiniArg(var modelFile: String = "models/news4L.mod", var hostname:String ="localhost",var port: Int = 8080) extends ArgHandler {
+class MiniArg(var modelFile: String = "models/news4L.mod", var hostname: String = "localhost", var port: Int = 8080) extends ArgHandler {
   val program = "REST"
 
   config += "REST" ->
@@ -210,11 +198,11 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
 
   def labelledFileInput(fn: String): IterableView[(String, Symbol), Iterable[_]] = {
     val result: IterableView[(String, Symbol), Iterable[_]] = FileLines(fn).zipWithIndex.map {
-      case (LabelText(label, text), idx)      => text -> Symbol(label);
+      case (LabelText(label, text), idx) => text -> Symbol(label);
       case (LabelTextSpace(label, text), idx) => text -> Symbol(label);
       case (text@_, idx) => {
-        log("WARN","line " + idx + ": '" + text + "' doesn't match expected format of label followed by text!")
-        ""->Symbol("")
+        log("WARN", "line " + idx + ": '" + text + "' doesn't match expected format of label followed by text!")
+        "" -> Symbol("")
       };
     }
 
@@ -365,9 +353,24 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
       val strat = if (stratify) stratifyDataset(enoughData) else enoughData
 
       datasetBreakdown(strat)
-      splitLabelledData(strat, split)
+      val trainAndTest: (List[(String, Symbol)], List[(String, Symbol)]) = splitLabelledData(strat, split)
+
+     // saveTestPartitionToFile(trainAndTest)
+      trainAndTest
     }
     else Tuple2(null, null)
+  }
+
+  def saveTestPartitionToFile(trainAndTest: (List[(String, Symbol)], List[(String, Symbol)])): Unit = {
+    val pw: BufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("testSplitFile.tsv"), "UTF8"))
+    trainAndTest._2.foreach(
+      p => {
+        pw.write(p._2.name + "\t")
+        pw.write(p._1)
+        pw.write("\n")
+      }
+    )
+    pw.close
   }
 
   def trainModel(trainer: (Array[Array[Double]], Array[Symbol]) => LinearModel, trainSplit: List[(String, Symbol)]): String = {
@@ -435,6 +438,8 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     val scoresSeq: Iterable[(Array[(Double, Symbol)], Symbol)] = scores.seq
 
     val (score, confmat) = scoreClassification(scoresSeq)
+    val allScores = confmat._1
+    val top5 = confmat._2
 
     val afterC = System.currentTimeMillis()
     logger.debug("took " + (afterC - beforeC) + " millis to classify " + labels.length + " items")
@@ -443,8 +448,14 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     logger.debug("took " + (after - before) + " millis to score " + labels.length + " items")
 
     log("INFO", "# of trials: " + labels.length)
-    for (c <- confmat) log("INFO", c)
+    for (c <- allScores) log("INFO", c)
     log("INFO", "accuracy = %f", score)
+
+    if (labels.length > 10) {
+      log("INFO", "least accurate")
+      for (c <- top5) log("INFO", c)
+    }
+
     if (scorefn != "")
       withPrint(scorefn) { f =>
         for (((text, label), scores) <- input.toList zip scoresSeq)
@@ -464,8 +475,15 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     logger.debug("scoreModel took " + (afterC - beforeC) + " millis to classify " + labels.length + " items")
 
     log("INFO", "# of trials: " + labels.length)
-    for (c <- confmat) log("INFO", c)
+    for (c <- confmat._1) log("INFO", c)
     log("INFO", s"accuracy = $score")
+
+    if (labels.length > 10) {
+      val top5 = confmat._2
+      log("INFO", "least accurate " + (top5.length - 1))
+      for (c <- top5) log("INFO", c)
+    }
+
     if (scorefn != "")
       withPrint(scorefn) { f =>
         for (((text, label), scores) <- input.toList zip scores)
@@ -528,6 +546,7 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     else 0
   }
 
+  // demonstrates using langid as a classifier
   def testLangid(testfile: String): Float = {
     val classifier = getLangidClassifier
     testSet = testfile

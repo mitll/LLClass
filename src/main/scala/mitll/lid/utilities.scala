@@ -26,9 +26,9 @@ import javax.swing.filechooser.FileSystemView
 
 import org.apache.commons.io.FileUtils._
 
-import scala.collection.immutable.Vector
+import scala.collection.immutable.{ListMap, Vector}
 import scala.collection.mutable.{ArrayBuffer, HashMap, ListBuffer, Map}
-import scala.collection.{Iterable, IterableView}
+import scala.collection.{Iterable, IterableView, mutable}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.io.{BufferedSource, Source}
@@ -437,19 +437,34 @@ object utilities {
   // -------------------------------------------------------------------------------------------------------------------------------------
   def classify(input: Iterable[FV], model: LinearModel) = input map model.csortScores _
 
-  def scoreClassification(scores: Iterable[(Array[(Double, Symbol)], Symbol)]): (Float, Array[String]) = {
+  def scoreClassification(scores: Iterable[(Array[(Double, Symbol)], Symbol)]): (Float, (Array[String],Array[String])) = {
     var (correct, total) = (0.0f, 0.0f)
-    var confmat = HashMap[Symbol, Map[Symbol, Double]]()
-    def printConfMat: Array[String] = {
+    val confmat = HashMap[Symbol, Map[Symbol, Double]]()
+    def printConfMat: (Array[String],Array[String]) = {
       val outputs = Set(confmat.values.flatMap(_.keySet).toSeq: _*).toList.sortWith(_.name < _.name)
       val truths = confmat.keys.toList.sortWith(_.name < _.name)
-      var ret = ArrayBuffer((Array("") ++ outputs.map(_.name) ++ Array("N", "class %")).map("%10s" % _).mkString(" "))
+      val header = (Array("") ++ outputs.map(_.name) ++ Array("N", "class %")).map("%10s" % _).mkString(" ")
+      var ret  = ArrayBuffer(header)
+      var ret2 = ArrayBuffer(header)
+
+      val accuracyToRow = HashMap[Double,String]()
+
       for (t <- truths) {
-        val rowTotal = confmat(t).foldLeft(0.0)((res, v) => res + v._2)
-        ret += (Array("%10s" % t.name) ++ outputs.map(l => "%10d" % math.round(confmat(t)(l))) ++
-          Array("%10d %10.6f" %(rowTotal.toInt, confmat(t)(t) / rowTotal))).mkString(" ")
+        val labelToTotal: mutable.Map[Symbol, Double] = confmat(t)
+        val rowTotal = labelToTotal.foldLeft(0.0)((res, v) => res + v._2)
+        val accuracy: Double = labelToTotal(t) / rowTotal
+        val rowForLabel = (Array("%10s" % t.name) ++ outputs.map(l => "%10d" % math.round(labelToTotal(l))) ++
+          Array("%10d %10.6f" %(rowTotal.toInt, accuracy))).mkString(" ")
+        ret += rowForLabel
+        accuracyToRow.put(accuracy,rowForLabel)
       }
-      ret.toArray
+      val toList: List[Double] = accuracyToRow.keySet.toList
+
+      val sortedMap = ListMap(accuracyToRow.toSeq.sortBy(_._1):_*)
+      val top5: ListMap[Double, String] = sortedMap.take(5)
+      top5.values.foreach(ret2 += _)
+
+      (ret.toArray, ret2.toArray)
     }
 
     for ((score, truth) <- scores) {
