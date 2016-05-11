@@ -38,7 +38,7 @@ class LIDSpec extends FlatSpec with Matchers {
   }
 
   it should "train a model over 11 languages of twitter" in {
-    val args = "-all test/twitter-11-500each.tsv.gz -split 0.15 -iterations 2"
+    val args = "-all test/twitter-11-500each.tsv.gz -split 0.15 -iterations 10"
     val overallAccuracy = new LID().ep(args.split(" "))
     val expected = 0.807f
     overallAccuracy shouldBe expected +- 0.001f

@@ -32,6 +32,12 @@ import scala.io.{BufferedSource, Source}
 import scala.{Iterable, Seq}
 
 object LLClass extends LazyLogging {
+  var service : RESTService = null
+
+  sys addShutdownHook {
+    if (service != null) service.stopServer()
+  }
+
   def main(args: Array[String]) {
     if (args.length < 1) {
       println("Usage : expecting args like : LID -all test/news4L-500each.tsv.gz or REST -model models/news4L.mod")
@@ -42,7 +48,13 @@ object LLClass extends LazyLogging {
     }
     else {
       var run = args(0)
-      if (run == "multiparam") {
+      if (run == "REST") {
+        val miniArg = new MiniArg()
+        miniArg.parseArgs(args.slice(1, args.length))
+        service = new RESTService(miniArg.modelFile, miniArg.hostname, miniArg.port)
+        Thread.sleep(Long.MaxValue)
+      }
+      else if (run == "multiparam") {
         new multiparam().main(args.slice(1, args.length))
       }
       else if (run == "LID") {
@@ -495,7 +507,6 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
           f.println(mesg)
           f.println()
           top5.foreach(f.println)
-//          log("INFO", "\n"+top5.mkString("\n"))
         }
       }
     score
