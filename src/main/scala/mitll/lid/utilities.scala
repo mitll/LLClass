@@ -442,10 +442,14 @@ object utilities {
     val confmat = HashMap[Symbol, Map[Symbol, Double]]()
     def printConfMat: (Array[String],Array[String]) = {
       val outputs = Set(confmat.values.flatMap(_.keySet).toSeq: _*).toList.sortWith(_.name < _.name)
-      val truths = confmat.keys.toList.sortWith(_.name < _.name)
-      val header = (Array("") ++ outputs.map(_.name) ++ Array("N", "class %")).map("%10s" % _).mkString(" ")
+      val truths: List[Symbol] = confmat.keys.toList.sortWith(_.name < _.name)
+      val headerSeq: Array[String] = (Array("") ++ outputs.map(_.name) ++ Array("N", "class %")).map("%10s" % _)
+      val headerSeqUnder: Array[String] = (Array("|") ++ outputs.map(x => "--------|") ++ Array("N", "class %")).map(x => "----------|")
+      val header = headerSeq.mkString(" ")
+      val theader = "|"+headerSeq.mkString("|")+"|"
       var ret  = ArrayBuffer(header)
-      var ret2 = ArrayBuffer(header)
+      var ret2 = ArrayBuffer(theader)
+      ret2 += "|"+headerSeqUnder.mkString("")
 
       val accuracyToRow = HashMap[Double,String]()
 
@@ -453,12 +457,13 @@ object utilities {
         val labelToTotal: mutable.Map[Symbol, Double] = confmat(t)
         val rowTotal = labelToTotal.foldLeft(0.0)((res, v) => res + v._2)
         val accuracy: Double = labelToTotal(t) / rowTotal
-        val rowForLabel = (Array("%10s" % t.name) ++ outputs.map(l => "%10d" % math.round(labelToTotal(l))) ++
-          Array("%10d %10.6f" %(rowTotal.toInt, accuracy))).mkString(" ")
+        val valueSeq: Array[String] = Array("%10s" % t.name) ++ outputs.map(l => "%10d" % math.round(labelToTotal(l))) ++
+          Array("%10d" % rowTotal.toInt) ++ Array("%10.6f" %  accuracy)
+
+        val rowForLabel = valueSeq.mkString(" ")
         ret += rowForLabel
-        accuracyToRow.put(accuracy,rowForLabel)
+        accuracyToRow.put(accuracy,"|"+valueSeq.mkString("|") + "|")
       }
-      val toList: List[Double] = accuracyToRow.keySet.toList
 
       val sortedMap = ListMap(accuracyToRow.toSeq.sortBy(_._1):_*)
       val top5: ListMap[Double, String] = sortedMap.take(5)

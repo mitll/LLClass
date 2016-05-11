@@ -378,7 +378,7 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
 
     val input = if (trainSet.existe) labelledFileInput(trainSet) else trainSplit
     val labels = input.map(_._2) toList
-    val prepped = input |>: skipLabels * preprocess(cOrder, wOrder)
+    val prepped: Iterable[Array[Symbol]] = input |>: skipLabels * preprocess(cOrder, wOrder)
     val ((dict, index, bkgmodel), x) = prepped =+>: bkgS(mincount = minCount, prune = prune)
 
     // save dict to file for printing heavy hitters (mira.scala 178 - commented out)
@@ -452,7 +452,8 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     log("INFO", "accuracy = %f", score)
 
     if (labels.length > 10) {
-      log("INFO", "least accurate")
+      log("INFO", "least accurate for " + all)
+
       for (c <- top5) log("INFO", c)
     }
 
@@ -478,16 +479,24 @@ class LID extends InternalPipeRunner[Float] with TrainerTemplate with Classifier
     for (c <- confmat._1) log("INFO", c)
     log("INFO", s"accuracy = $score")
 
+    val top5 = confmat._2
+    val mesg: String = "least accurate " + (top5.length - 2) + " for " + (if (all.nonEmpty) all else testSet)
     if (labels.length > 10) {
-      val top5 = confmat._2
-      log("INFO", "least accurate " + (top5.length - 1))
-      for (c <- top5) log("INFO", c)
+      log("INFO", mesg)
+      log("INFO", "\n"+top5.mkString("\n"))
     }
 
     if (scorefn != "")
       withPrint(scorefn) { f =>
         for (((text, label), scores) <- input.toList zip scores)
           f.println("%s %s ::: %s" %(label.name, text, scores.map { case (sc, lab) => lab.name + " -> " + sc }.mkString(" ")));
+
+        if (labels.length > 10) {
+          f.println(mesg)
+          f.println()
+          top5.foreach(f.println)
+//          log("INFO", "\n"+top5.mkString("\n"))
+        }
       }
     score
   }

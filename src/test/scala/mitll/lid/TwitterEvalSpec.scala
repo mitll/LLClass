@@ -27,253 +27,65 @@ import org.scalatest._
 
 class TwitterEvalSpec extends FlatSpec with Matchers with LazyLogging {
   ignore should "train a model over recall corpus and save it" in {
-    val args = "-all test/recallCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetRecall.mod"
+    val args = "-all test/recallCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetRecall.mod -log logs/recall.log"
     val overallAccuracy = new LID().ep(args.split(" "))
-    val expected = 0.923f
+    val expected = 0.9246396f
     overallAccuracy shouldBe expected +- 0.001f
   }
 
   ignore should "train a model over recall normalized corpus and save it" in {
-    val args = "-all test/recallCorpusNorm.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetRecallNorm.mod"
+    val args = "-all test/recallCorpusNorm.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetRecallNorm.mod -log logs/recallNorm.log"
     val overallAccuracy = new LID().ep(args.split(" "))
     val expected = 0.923f
     overallAccuracy shouldBe expected +- 0.001f
   }
 
   ignore should "train a model over precision norm corpus and save it" in {
-    val args = "-all test/precCorpusNorm.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNorm.mod"
+    val args = "-all test/precCorpusNorm.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNorm.mod -log logs/precisionNorm.log"
     val overallAccuracy = new LID().ep(args.split(" "))
     val expected = 0.868f
     overallAccuracy shouldBe expected +- 0.001f
   }
 
   ignore should "train a model over precision norm corpus skip und labels and save it" in {
-    val args = "-all test/precCorpusNormNoUnd.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNormNoUnd.mod"
+    val args = "-all test/precCorpusNormNoUnd.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNormNoUnd.mod -log logs/precisionNormNoUnd.log"
     val overallAccuracy = new LID().ep(args.split(" "))
-    val expected = 0.949f
+    val expected = 0.95504534f
     overallAccuracy shouldBe expected +- 0.001f
   }
 
   ignore should "train a model over precision corpus and save it" in {
-    val args = "-all test/precisionCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecision.mod"
+    val args = "-all test/precisionCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecision.mod -log logs/precision.log"
     val overallAccuracy = new LID().ep(args.split(" "))
-    val expected = 866f
+    val expected = 0.85813046f
     overallAccuracy shouldBe expected +- 0.001f
   }
 
   ignore should "train a model over precision corpus skip und labels and save it" in {
-    val args = "-all test/precisionCorpusNoUnd.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNoUnd.mod"
+    val args = "-all test/precisionCorpusNoUnd.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetPrecisionNoUnd.mod -log logs/precisionNoUnd.log"
     val overallAccuracy = new LID().ep(args.split(" "))
-    val expected = 0.955f
+    val expected = 0.9488713f
     overallAccuracy shouldBe expected +- 0.001f
   }
 
   ignore should "train a model over uniform corpus and save it" in {
-    val args = "-all test/uniformCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetUniform.mod"
+    val args = "-all test/uniformCorpus.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetUniform.mod -log logs/uniform.log"
     val overallAccuracy = new LID().ep(args.split(" "))
-    val expected = 0.909f
+    val expected = 0.91174674f
     overallAccuracy shouldBe expected +- 0.001f
   }
 
-  ignore should "train a model over uniform normalized corpus and save it" in {
-    val args = "-all test/uniformCorpusNorm.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetUniformNorm.mod"
+  it should "train a model over uniform corpus and save it and skip und label" in {
+    val args = "-all test/uniformCorpusNoUnd.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetUniform.mod -log logs/uniformNoUnd.log"
+    val overallAccuracy = new LID().ep(args.split(" "))
+    val expected = 0.91174674f
+    overallAccuracy shouldBe expected +- 0.001f
+  }
+
+  it should "train a model over uniform normalized corpus and save it and skip und label" in {
+    val args = "-all test/uniformCorpusNormNoUnd.tsv -split 0.15 -iterations 10 -stratify false -dropSmallerThan 500 -model models/tweetUniformNorm.mod  -log logs/uniformNormNoUnd.log"
     val overallAccuracy = new LID().ep(args.split(" "))
     val expected = 0.9291058f
     overallAccuracy shouldBe expected +- 0.001f
   }
-
-  // check labels
-
-  ignore should "return labels of recall model" in {
-    val newsRunner = new mitll.lid.Scorer("models/tweetRecall.mod")
-    val labels = newsRunner.getLabels
-    labels should contain only("am", "ar", "bg", "bn", "bo", "bs", "ca", "ckb", "cs", "cy", "da", "de", "dv", "el",
-      "en", "es", "et", "eu", "fa", "fi", "fr", "gu", "he", "hi", "hi-Latn", "hr", "ht", "hu", "hy", "id", "is", "it",
-      "ja", "ka", "km", "kn", "ko", "lo", "lv", "ml", "mr", "my", "ne", "nl", "no", "pa", "pl", "ps", "pt", "ro", "ru",
-      "sd", "si", "sk", "sl", "sr", "sv", "ta", "te", "th", "tl", "tr", "uk", "ur", "vi", "zh-CN", "zh-TW")
-  }
-
-  ignore should "return labels of zipped recall model" in {
-    val newsRunner = new mitll.lid.Scorer("models/tweetRecall.mod.gz")
-    val labels = newsRunner.getLabels
-    labels should contain only("am", "ar", "bg", "bn", "bo", "bs", "ca", "ckb", "cs", "cy", "da", "de", "dv", "el",
-      "en", "es", "et", "eu", "fa", "fi", "fr", "gu", "he", "hi", "hi-Latn", "hr", "ht", "hu", "hy", "id", "is", "it",
-      "ja", "ka", "km", "kn", "ko", "lo", "lv", "ml", "mr", "my", "ne", "nl", "no", "pa", "pl", "ps", "pt", "ro", "ru",
-      "sd", "si", "sk", "sl", "sr", "sv", "ta", "te", "th", "tl", "tr", "uk", "ur", "vi", "zh-CN", "zh-TW")
-  }
-
-  ignore should "return labels of precision model" in {
-    val newsRunner = new mitll.lid.Scorer("models/tweetPrecision.mod")
-    val labels = newsRunner.getLabels
-    labels should contain only("am", "ar", "bn", "ckb", "de", "el", "en", "es", "fa", "fr", "gu", "he", "hi",
-      "hi-Latn", "hy", "id", "it", "ja", "ka", "km", "kn", "lo", "ml", "mr", "my", "ne", "nl", "pa", "pl", "ps",
-      "pt", "ru", "sd", "si", "sr", "sv", "ta", "te", "th", "und", "ur", "vi", "zh-CN", "zh-TW")
-  }
-
-  ignore should "return labels of uniform model" in {
-    val newsRunner = new mitll.lid.Scorer("models/tweetUniform.mod")
-    val labels = newsRunner.getLabels
-    labels should contain only("ar", "en", "es", "fr", "id", "ja", "ko", "pt", "ru", "th", "tl", "tr", "und")
-  }
-
-  // use test set another model
-  ignore should "use recall model to test uniform" in {
-    val args = "-test test/uniformCorpus.tsv -model models/tweetRecall.mod"
-    val overallAccuracy = new LID().ep(args.split(" "))
-    true shouldBe true
-  }
-
-  ignore should "merge precision eval json" in {
-    val originJSON = "test/precision.json"
-    val labelFile = "test/precision_oriented.tsv"
-    val outputCorpus = "test/precisionCorpus.tsv"
-
-    makeOurFormat(originJSON, labelFile, outputCorpus)
-
-    true shouldBe true
-  }
-
-  ignore should "merge eval recall json" in {
-    val originJSON = "test/hydratedRecall.json"
-    val labelFile = "test/recall_oriented.tsv"
-    val outputCorpus = "test/recallCorpus.tsv"
-
-    makeOurFormat(originJSON, labelFile, outputCorpus)
-
-    true shouldBe true
-  }
-
-  ignore should "merge eval json" in {
-    val originJSON = "test/hydratedUniform.json"
-    val labelFile = "test/uniformly_sampled.tsv"
-    val outputCorpus = "test/uniformCorpus.tsv"
-
-    makeOurFormat(originJSON, labelFile, outputCorpus)
-
-    true shouldBe true
-  }
-
-  ignore should "filter out und" in {
-    filterOutLabel("test/precCorpusNorm.tsv","test/precCorpusNormNoUnd.tsv","und")
-  }
-
-  ignore should "filter out und on prec corpus" in {
-    filterOutLabel("test/precisionCorpus.tsv","test/precisionCorpusNoUnd.tsv","und")
-  }
-
-  def filterOutLabel(file: String, outfile: String, labelOut: String): Unit = {
-    val LabelText =
-      """(?s)^(\S+)\t+(.*)$""".r
-
-    val LabelTextSpace =
-      """^\s*(\S+)\s+(.*)$""".r
-
-
-    val filtered = FileLines(file).filter(line => {
-      line match {
-        case LabelText(label, text) => !label.equals(labelOut)
-        case LabelTextSpace(label, text) => !label.equals(labelOut)
-        case _ => true
-      }
-    })
-
-    new File(outfile).delete()
-    val writer = new FileWriter(outfile, true)
-    filtered.foreach(line => {
-      writer.write(line)
-      writer.write("\n")
-    })
-    writer.close()
-  }
-
-  ignore should "clean quotes" in {
-    clean()
-  }
-
-  def clean(): Unit = {
-    val dir = new File("test")
-    val cleaned = new File("cleaned")
-    cleaned.mkdir();
-    dir.listFiles().foreach {
-      file =>
-        if (file.getName.contains("orpus")) {
-          println("cleaning " +file.getName)
-          cleanQuotes(file.getAbsolutePath,"cleaned/"+file.getName)
-        }
-    }
-  }
-
-  def cleanQuotes(quotes: String, outputCorpus: String): Unit = {
-    new File(outputCorpus).delete()
-    val writer = new FileWriter(outputCorpus, true)
-
-    FileLines(quotes).foreach {
-      line =>
-        if (line.endsWith("\"")) {
-          var outline = line.dropRight(1)
-          writer.write(outline)
-          writer.write("\n")
-        }
-        else {
-          writer.write(line)
-          writer.write("\n")
-        }
-    }
-
-    writer.close()
-  }
-
-  // TODO : filter out small classes, e.g. or
-  def makeOurFormat(originJSON: String, labelFile: String, outputCorpus: String): Unit = {
-    var idToContent = Map[String, String]()
-    val exampleTwitterID: String = "489241303667204098"
-
-    FileLines(originJSON).foreach {
-      line =>
-        val parts = line.split("\",\"")
-        val id = line.substring(2, 2 + exampleTwitterID.length)
-        val content = line.substring(5 + exampleTwitterID.length).dropRight(1)
-        if (id.trim.isEmpty) {
-          logger.error("missing id for " + line)
-        }
-        //  else logger.debug("id '" +id+ "'")
-        idToContent += (id -> content.trim)
-    }
-
-    var idToLabel = Map[String, String]()
-
-    FileLines(labelFile).foreach {
-      line =>
-        val split = line.split("\\s++")
-        val id = split(1)
-        val label = split(0)
-        if (label.nonEmpty) {
-          idToLabel += (id -> label)
-        }
-    }
-
-    println("labels " + idToLabel.size + " id->content " + idToContent.size)
-    var unique = Set[String]()
-    unique ++= idToLabel.values
-    println("labels (" + unique.size + ") : " + unique.mkString(","))
-
-    new File(outputCorpus).delete()
-    val writer = new FileWriter(outputCorpus, true)
-
-    var c = 0
-    idToContent foreach {
-      case (id, content) =>
-        if (idToLabel.isDefinedAt(id)) {
-          val label = idToLabel(id)
-          writer.write(label)
-          writer.write("\t")
-          writer.write(content)
-          writer.write("\n")
-          c += 1
-        }
-    }
-    writer.close()
-    println("wrote " + c + " lines")
-  }
-
 }

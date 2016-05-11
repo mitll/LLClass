@@ -8,6 +8,8 @@ scalaVersion := "2.11.8"
 
 sbtVersion := "0.13.11"
 
+//parallelExecution in Test := true
+
 test in assembly := {}
 
 // get the assembly plugin, not using https
