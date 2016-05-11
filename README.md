@@ -15,6 +15,7 @@ More documentation can be found under docs : [Auto ILR Paper](docs/Shen_Williams
 
 ###Build Dependencies
 * scala 2.11.8
+* sbt
 * Java 1.8
 
 ### To Compile Source Code and Build
@@ -22,15 +23,19 @@ At top-level directory type:
 ```
 sbt assembly
 ```
-Running this command will cause SBT to download some dependencies, this may take some time depending on your internet connection. If you use a proxy, you may need to adjust your local proxy settings to allow SBT to fetch dependencies.
+Running this command will cause SBT to download some dependencies, this may take some time depending on your internet connection. 
+
+If you use a proxy, you may need to adjust your local proxy settings to allow SBT to fetch dependencies. 
+
+If you are behind a firewall, you may need to add a configuration file in your ```~/.sbt``` directory. See the [SBT Behind a Firewall](#sbt-behind-a-firewall) section for more details.
 
 This creates a jar under target at 
 ```
-[info] Packaging ... target/scala-2.11/LLClass-assembly-1.0.jar
+[info] Packaging ... target/scala-2.11/LLClass-assembly-1.1.jar
 ```
-For examples below, you can add a link to the jar:
+For examples below, you can add a link to the jar (from the top-level directory):
 ```
-ln -s target/scala-2.11/LLClass-assembly-1.0.jar LLClass.jar
+ln -s target/scala-2.11/LLClass-assembly-1.1.jar LLClass.jar
 ```
 
 ### Data Format Description
@@ -311,14 +316,32 @@ Initial data had 72000 of 87585 tweets from recall_oriented.
 |Labels (13)|ar, en, es, fr, id, ja, ko, pt, ru, th, tl, tr, und|
 |Accuracy|0.9098282|
 
+##### Train/Test 85/15 split all labels, no text normalization, minimum 500 examples per label, no und label
+
+|Info|Value|
+|----|-----|
+|Train|76442|
+|Test|10402|
+|Labels (12)|ar, en, es, fr, id, ja, ko, pt, ru, th, tl, tr|
+|Accuracy|0.9699096|
+
 ##### Train/Test 85/15 split all labels, with text normalization, minimum 500 examples per label
 
 |Info|Value|
 |----|-----|
-|Train|74854|
+|Train|69344|
 |Test|11228|
 |Labels (13)|ar, en, es, fr, id, ja, ko, pt, ru, th, tl, tr, und|
 |Accuracy|0.9291058|
+
+##### Train/Test 85/15 split all labels, with text normalization, minimum 500 examples per label, no und label
+
+|Info|Value|
+|----|-----|
+|Train|69338|
+|Test|10401|
+|Labels (12)|ar, en, es, fr, id, ja, ko, pt, ru, th, tl, tr|
+|Accuracy|0.9808672|
 
 ### Freetext
 
