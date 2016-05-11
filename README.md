@@ -316,14 +316,32 @@ Initial data had 72000 of 87585 tweets from recall_oriented.
 |Labels (13)|ar, en, es, fr, id, ja, ko, pt, ru, th, tl, tr, und|
 |Accuracy|0.9098282|
 
+##### Train/Test 85/15 split all labels, no text normalization, minimum 500 examples per label, no und label
+
+|Info|Value|
+|----|-----|
+|Train|76442|
+|Test|10402|
+|Labels (12)|ar, en, es, fr, id, ja, ko, pt, ru, th, tl, tr|
+|Accuracy|0.9699096|
+
 ##### Train/Test 85/15 split all labels, with text normalization, minimum 500 examples per label
 
 |Info|Value|
 |----|-----|
-|Train|74854|
+|Train|69344|
 |Test|11228|
 |Labels (13)|ar, en, es, fr, id, ja, ko, pt, ru, th, tl, tr, und|
 |Accuracy|0.9291058|
+
+##### Train/Test 85/15 split all labels, with text normalization, minimum 500 examples per label, no und label
+
+|Info|Value|
+|----|-----|
+|Train|69338|
+|Test|10401|
+|Labels (12)|ar, en, es, fr, id, ja, ko, pt, ru, th, tl, tr|
+|Accuracy|0.9808672|
 
 ### Freetext
 
