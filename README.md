@@ -227,6 +227,10 @@ confidence: -0.37207511599381426
 
 #### Twitter Results
 
+### Tweet normalization
+
+Tweet normalization was done by the [LLString tweet normalizer](https://github.com/mitll/LLString.git).  See that repo for instructions on how to install it and run the python normalization script.
+
 ### Twitter : Evaluating language identification performance 
 
 From [Evaluating language identification performance](https://blog.twitter.com/2015/evaluating-language-identification-performance)
