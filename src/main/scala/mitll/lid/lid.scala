@@ -102,8 +102,21 @@ class Scorer(val modeldir: String) extends LazyLogging {
   def textLIDFull(text: String): Array[(Symbol, Double)] = {
     if (text != null && text != "") {
       val classify1: Array[(Double, Symbol)] = lidModel.classify(text)
-      val map: Array[(Symbol, Double)] = classify1.map { case (k, v) => (v, k) }
-      map
+
+      var confidences: Array[(Symbol,Double)] = new Array[(Symbol,Double)](classify1.length)
+      val denom = classify1.foldLeft(0.0) { (a, b) => a + math.exp(b._1) }
+      for(i <- 0 until classify1.length){
+        var language = classify1(i)._2
+        var lnum = math.exp(classify1(i)._1)
+        val conf = (lnum / denom) * 100
+
+        var result = (language,conf)                 
+        confidences(i) = result
+      }
+
+      //val map: Array[(Symbol, Double)] = classify1.map { case (k, v) => (v, k) }
+      //map
+      confidences
     } else {
       Array()
     }

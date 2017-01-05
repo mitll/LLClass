@@ -106,23 +106,27 @@ java -jar LLClass.jar LID -train test/no_nl_da_en_5k.tsv.gz -test test/no_nl_da_
 
 ### Calling from Java/Scala
  
-There are two functions to score text. 
+There are two main functions to score text. 
 
 * textLID() returns the language code and a confidence value for that code. 
-* textLIDFull() returns a set of language labels ranked by most likely to least likely and a confidence value for each one. 
+* textLIDFull() returns a set of language labels ranked by most likely to least likely and a confidence value for each one. The confidence values range [0,1] where larger numbers imply higher confidence.
 
-#### Steps to use mitll.SCORE
-1) create an instance of the SCORE class and Sspecify the LID model
+#### Steps to perform language identification via LLClass 
+1) Import LLClass language id package
 ```
-var newsRunner = mitll.SCORE("path/to/lid/model")
+import mitll.lid
 ```
-2) call the function mitll.SCORE.textLID()
+2) create an instance of the ```Scorer``` class and Sspecify the LID model
+```
+var newsRunner = new lid.Scorer("path/to/lid/model")
+```
+3) call the function mitll.Scorer.textLID()
 ```
 var (language, confidence) = newsRunner.textLID("what language is this text string?")
 ```
-3) or call the function mitll.SCORE.textLIDFull()
+4) or call the function mitll.SCORE.textLIDFull()
 ```
-var langConfArray : Array[(String,Double)] = newsRunner.textLIDFull("what language is this text string?")
+var langConfArray : Array[(Symbol,Double)] = newsRunner.textLIDFull("what language is this text string?")
 ```
 
 ### REST service
