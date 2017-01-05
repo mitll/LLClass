@@ -116,7 +116,7 @@ There are two main functions to score text.
 ```
 import mitll.lid
 ```
-2) create an instance of the ```Scorer``` class and Sspecify the LID model
+2) Create an instance of the ```Scorer``` class and specify the LID model
 ```
 var newsRunner = new lid.Scorer("path/to/lid/model")
 ```
@@ -124,7 +124,7 @@ var newsRunner = new lid.Scorer("path/to/lid/model")
 ```
 var (language, confidence) = newsRunner.textLID("what language is this text string?")
 ```
-4) or call the function mitll.SCORE.textLIDFull()
+4) or call the function mitll.Scorer.textLIDFull()
 ```
 var langConfArray : Array[(Symbol,Double)] = newsRunner.textLIDFull("what language is this text string?")
 ```
