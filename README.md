@@ -1,5 +1,5 @@
-### Intro
-LLClass can be used for a number of text classification problems including:
+### Introduction
+LLClass is a Java tool that can be used for a number of text classification problems including:
 
 * Language Identification (LID)
 * Automatic text difficulty assessment (Auto ILR)
@@ -9,11 +9,13 @@ It includes a number of different classifiers including MIRA, SVM, and a percept
 
 It also includes a simple REST service for doing classification and some pre trained models.
 
-More documentation can be found under docs : [Auto ILR Paper](docs/Shen_Williams_Marius_Salesky_ACL2013.pdf)
+More documentation can be found under docs : 
+* [Low-Resource Twitter LID](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&ved=0ahUKEwi9nIPhrITVAhWCVj4KHeWwB4IQFggmMAA&url=http%3A%2F%2Fweb.science.mq.edu.au%2F~smalmasi%2Fvardial4%2Fpdf%2FVarDial09.pdf&usg=AFQjCNEB2r8xLI4LfbZrO6iFbeLjGKKraw)
+* [Auto ILR Paper](docs/Shen_Williams_Marius_Salesky_ACL2013.pdf)
 
-* For performance benchmarks, see below.
+See below for some performance benchmarks.
 
-###Build Dependencies
+### Build Dependencies
 * scala 2.11.8
 * sbt
 * Java 1.8
