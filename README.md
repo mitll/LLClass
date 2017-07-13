@@ -2,7 +2,8 @@
 LLClass is a Java tool that can be used for a number of text classification problems including:
 
 * Language Identification (LID)
-* Automatic text difficulty assessment (Auto ILR)
+* Automatic text difficulty assessment
+* Fake news classifier : [Download new model](https://github.com/mitll/LLClass/releases/download/v1.1.4/fakeNewsEnglish.mod)
 * Sentiment analysis
 
 It includes a number of different classifiers including MIRA, SVM, and a perceptron.
